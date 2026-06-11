@@ -809,8 +809,8 @@ const demoPending = [
 
 function renderClientCard(c) {
   const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  const panelUrl = `panel.html?client=${c.slug}&token=${c.token}&name=${encodeURIComponent(c.name)}`;
-  const waUrl = `https://wa.me/${c.phone.replace(/\D/g, '')}`;
+  const panelUrl = c.panelUrl || `panel.html?client=${c.slug}&token=${c.token}&name=${encodeURIComponent(c.name)}`;
+  const waUrl = `https://wa.me/${(c.phone || '').replace(/\D/g, '')}`;
 
   return `
     <div class="client-card" id="card-${c.id}">
@@ -870,34 +870,55 @@ function addSampleClient(c) {
 }
 
 async function loadDashboard() {
-  // Try API first
-  let clients = [...demoClients];
-  let pending = [...demoPending];
+  // Show loading state
+  document.getElementById('clientsGrid').innerHTML =
+    `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:14px;">Cargando...</div>`;
+
+  let clients = null;
+  let activeCount = 0;
+  let pendingCount = 0;
+  let mrrTotal = 0;
 
   try {
-    const res = await fetch(`${API_BASE}/admin/nova-clients`);
+    const res = await fetch(`${API_BASE}/admin/nova-clients?password=${OP_PASSWORD}`);
     if (res.ok) {
       const data = await res.json();
-      if (data.clients?.length) clients = data.clients;
-      if (data.pending?.length) pending = data.pending;
+      // API response shape: { clients, active_count, pending_count, mrr_total }
+      clients = data.clients || [];
+      activeCount = data.active_count ?? clients.filter(c => c.active && c.onboarding_complete).length;
+      pendingCount = data.pending_count ?? clients.filter(c => !c.onboarding_complete).length;
+      mrrTotal = data.mrr_total ?? (activeCount * 950);
     }
   } catch (e) {
-    // Use demo data
+    console.log('[Nova dashboard] API not reachable — using demo data');
+  }
+
+  // Fall back to demo data if API unreachable
+  if (!clients) {
+    clients = demoClients.map(c => ({
+      ...c,
+      active: true,
+      onboarding_complete: true,
+      whatsapp_panel_url: `panel.html?client=${c.slug}&token=${c.token}&name=${encodeURIComponent(c.name)}`,
+    }));
+    activeCount = clients.length;
+    pendingCount = demoPending.length;
+    mrrTotal = activeCount * 950;
   }
 
   allClients = clients;
 
-  // Stats
-  const activeCount = clients.filter(c => c.status === 'active').length;
+  // Stats row
   document.getElementById('statActive').textContent = activeCount;
-  document.getElementById('statPending').textContent = pending.length;
-  document.getElementById('statMRR').textContent = `$${(activeCount * 950).toLocaleString('es-MX')}`;
+  document.getElementById('statPending').textContent = pendingCount;
+  document.getElementById('statMRR').textContent = `$${mrrTotal.toLocaleString('es-MX')}`;
   document.getElementById('statLeadsMonth').textContent =
     clients.reduce((s, c) => s + (c.stats?.leads || 0), 0);
 
-  // Render
+  // Active clients grid
+  const activeClients = clients.filter(c => c.active !== false && c.onboarding_complete !== false);
   const grid = document.getElementById('clientsGrid');
-  if (activeCount === 0) {
+  if (activeClients.length === 0) {
     grid.innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:60px 40px;color:var(--muted);">
         <div style="font-size:36px;margin-bottom:16px;">🏡</div>
@@ -905,11 +926,32 @@ async function loadDashboard() {
         <div style="font-size:14px;">Usa el botón "Nuevo cliente" para comenzar.</div>
       </div>`;
   } else {
-    grid.innerHTML = clients.filter(c => c.status === 'active').map(renderClientCard).join('');
+    grid.innerHTML = activeClients.map(c => renderClientCard({
+      id: c.id,
+      slug: c.slug,
+      name: c.name,
+      phone: c.phone,
+      zone: c.zone,
+      token: c.access_token || c.token || '',
+      joined: c.created_at ? new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
+      stats: c.stats || { leads: 0, posts: 0, listings: 0 },
+      panelUrl: c.whatsapp_panel_url || `panel.html?client=${c.slug}&token=${c.token || ''}&name=${encodeURIComponent(c.name)}`,
+    })).join('');
   }
 
+  // Pending table
+  const pendingClients = clients.filter(c => c.onboarding_complete === false);
+  const pendingRows = pendingClients.map(c => renderPendingRow({
+    id: c.id,
+    name: c.name,
+    phone: c.phone,
+    zone: c.zone,
+    created: c.created_at ? new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }) : 'Reciente',
+    step: c.onboarding_step ? `Paso ${c.onboarding_step} / 8` : 'Iniciando...',
+  })).concat(demoPending.map(renderPendingRow)); // include demo pending entries
+
   document.getElementById('pendingBody').innerHTML =
-    pending.length ? pending.map(renderPendingRow).join('') :
+    pendingRows.length ? pendingRows.join('') :
     `<div style="padding:40px;text-align:center;color:var(--muted);font-size:14px;">Sin altas en proceso.</div>`;
 }
 
@@ -928,9 +970,19 @@ async function reenviarLink(name, phone, url) {
   }
 }
 
-function archivarCliente(id) {
+async function archivarCliente(id) {
   if (!confirm('¿Archivar este cliente? Nova dejará de responder por su número.')) return;
   const card = document.getElementById('card-' + id);
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/nova-archive-client/${id}?password=${OP_PASSWORD}`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error('API error');
+  } catch (e) {
+    // Proceed with UI update even if API fails (offline mode)
+  }
+
   if (card) {
     card.style.opacity = '0';
     card.style.transition = 'opacity 0.3s';
