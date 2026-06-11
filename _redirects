@@ -1,8 +1,3 @@
 # Nova website redirects
 
-# Short URLs
 /p/demo  /panel.html?client=nova-demo&token=nova-demo-token   302
-
-# Short URLs
-/panel   /panel.html   302
-/panel/  /panel.html   302
