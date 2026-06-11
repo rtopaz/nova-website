@@ -3,9 +3,6 @@
 # Short URLs
 /p/demo  /panel.html?client=nova-demo&token=nova-demo-token   302
 
-# SPA fallback — not needed for static site, but keeps direct URL access clean
+# Short URLs
 /panel   /panel.html   302
 /panel/  /panel.html   302
-
-# 404 fallback
-/*  /index.html  200
