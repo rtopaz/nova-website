@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova — Mi panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0F1117;
+      --surface: #1C1F2E;
+      --surface2: #222638;
+      --border:  #2A2F42;
+      --text:    #E8E0D5;
+      --muted:   #8A8FA8;
+      --gold:    #C9A96E;
+      --gold-bg: rgba(201,169,110,0.10);
+      --blue:    #4A9EBF;
+      --blue-bg: rgba(74,158,191,0.10);
+      --green:   #3DB97A;
+      --green-bg:rgba(61,185,122,0.10);
+      --red:     #E05C5C;
+      --red-bg:  rgba(224,92,92,0.10);
+      --orange:  #E8935A;
+      --orange-bg:rgba(232,147,90,0.10);
+      --radius:  12px;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── AUTH WALL ── */
+    #authWall {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%; max-width: 380px;
+      text-align: center;
+    }
+
+    .auth-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .auth-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+
+    .auth-input {
+      width: 100%;
+      background: var(--black);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .auth-input:focus { border-color: var(--gold); }
+
+    .auth-btn {
+      width: 100%;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .auth-btn:hover { background: #d9b97e; }
+
+    .auth-error {
+      font-size: 13px;
+      color: var(--red);
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── LAYOUT ── */
+    #app { display: none; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 28px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    .sidebar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+      padding: 4px 8px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .sidebar-section {
+      margin-bottom: 8px;
+    }
+
+    .sidebar-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 8px;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--muted);
+      text-decoration: none;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+    }
+
+    .sidebar-item:hover { background: var(--border); color: var(--text); }
+
+    .sidebar-item.active {
+      background: var(--gold-bg);
+      color: var(--gold);
+    }
+
+    .sidebar-item .badge {
+      margin-left: auto;
+      background: var(--red);
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 100px;
+      padding: 1px 7px;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .sidebar-item .badge.blue { background: var(--blue); }
+    .sidebar-item .badge.gold { background: var(--gold); color: var(--black); }
+
+    .sidebar-spacer { flex: 1; }
+
+    .sidebar-agent {
+      padding: 14px 12px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .agent-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--gold-bg);
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .agent-name { font-size: 13px; font-weight: 600; color: var(--text); }
+    .agent-role { font-size: 11px; color: var(--muted); }
+
+    /* ── MAIN ── */
+    main {
+      padding: 36px 40px;
+      overflow-y: auto;
+    }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .qa-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, background 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .qa-btn:hover {
+      border-color: var(--gold);
+      background: var(--gold-bg);
+      transform: translateY(-1px);
+    }
+
+    .qa-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+
+    .qa-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+      font-family: 'Playfair Display', serif;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-sub { font-size: 12px; color: var(--muted); }
+    .stat-up { color: var(--green); }
+    .stat-gold { color: var(--gold); }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .section-count {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── CARD STYLES ── */
+    .cards-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      transition: border-color 0.2s;
+    }
+
+    .card:hover { border-color: rgba(201,169,110,0.3); }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .card-type-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .badge-post { background: var(--blue-bg); color: var(--blue); }
+    .badge-email { background: var(--orange-bg); color: var(--orange); }
+    .badge-lead { background: var(--green-bg); color: var(--green); }
+    .badge-hot { background: rgba(224,92,92,0.15); color: var(--red); }
+
+    .card-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-timestamp {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* POST CARD */
+    .post-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .post-caption {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 14px;
+      white-space: pre-line;
+      border-left: 2px solid var(--gold);
+      padding-left: 12px;
+    }
+
+    .post-targets {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .platform-tag {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--muted);
+    }
+
+    /* EMAIL CARD */
+    .email-thread {
+      background: var(--black);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .email-from {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .email-subject {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .email-snippet {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .email-draft {
+      background: rgba(232,147,90,0.06);
+      border: 1px dashed rgba(232,147,90,0.3);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+    }
+
+    .draft-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 8px;
+    }
+
+    .draft-body {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .draft-editable {
+      width: 100%;
+      background: none;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      font-family: 'Inter', sans-serif;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* LEAD CARD */
+    .lead-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .lead-detail {
+      background: var(--black);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .lead-detail-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .lead-detail-value {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .lead-transcript {
+      background: var(--black);
+      border-radius: 8px;
+      padding: 12px 14px;
+      max-height: 160px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .lead-transcript .t-lead { color: var(--text); }
+    .lead-transcript .t-nova { color: var(--gold); }
+
+    .lead-transcript p { margin-bottom: 8px; }
+    .lead-transcript p:last-child { margin-bottom: 0; }
+
+    /* HOT LEAD PULSE */
+    .hot-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(224,92,92,0.08);
+      border: 1px solid rgba(224,92,92,0.2);
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: var(--red);
+      font-weight: 500;
+    }
+
+    .hot-dot {
+      width: 8px; height: 8px;
+      background: var(--red);
+      border-radius: 50%;
+      animation: hotPulse 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes hotPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(224,92,92,0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(224,92,92,0); }
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .card-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-approve {
+      flex: 1;
+      padding: 10px 16px;
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.15s;
+      display: flex; align-items: center; gap: 6px; justify-content: center;
+    }
+
+    .btn-approve:hover { background: #4dcf8e; transform: translateY(-1px); }
+
+    .btn-reject {
+      padding: 10px 16px;
+      background: none;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-reject:hover { border-color: var(--red); color: var(--red); }
+
+    .btn-contact {
+      flex: 1;
+      padding: 10px 16px;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s, transform 0.15s;
+      display: flex; align-items: center; gap: 6px; justify-content: center;
+      text-decoration: none;
+    }
+
+    .btn-contact:hover { background: #d9b97e; transform: translateY(-1px); }
+
+    .btn-send-email {
+      flex: 1;
+      padding: 10px 16px;
+      background: var(--orange);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+      display: flex; align-items: center; gap: 6px; justify-content: center;
+    }
+
+    .btn-send-email:hover { background: #f0a070; }
+
+    /* ── LISTINGS PAGE ── */
+    .listings-toolbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: var(--gold); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .filter-btn {
+      padding: 10px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-new {
+      padding: 10px 18px;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: flex; align-items: center; gap: 6px;
+      transition: background 0.2s;
+    }
+
+    .btn-new:hover { background: #d9b97e; }
+
+    .listings-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      width: 100%;
+    }
+
+    .table-head {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--surface2);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      transition: background 0.15s;
+    }
+
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: rgba(255,255,255,0.02); }
+
+    .cell-prop { font-size: 14px; font-weight: 500; color: var(--text); }
+    .cell-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .cell-price { font-size: 14px; font-weight: 600; color: var(--gold); }
+    .cell-text { font-size: 13px; color: var(--muted); }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-active { background: var(--green-bg); color: var(--green); }
+    .status-sold { background: var(--gold-bg); color: var(--gold); }
+    .status-paused { background: var(--border); color: var(--muted); }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .icon-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── EXPENSES PAGE ── */
+    .expenses-month-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .month-label {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .month-total {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--gold);
+      font-family: 'Playfair Display', serif;
+    }
+
+    .expenses-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .expense-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .expense-row:last-child { border-bottom: none; }
+
+    .expense-desc { font-size: 14px; color: var(--text); }
+    .expense-cat { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .expense-date { font-size: 13px; color: var(--muted); }
+    .expense-amount { font-size: 15px; font-weight: 600; color: var(--text); text-align: right; }
+
+    /* ── QUICK REPLY PANEL ── */
+    .whatsapp-thread {
+      background: var(--black);
+      border-radius: 10px;
+      padding: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+
+    .wt-msg { margin-bottom: 10px; }
+    .wt-lead { color: var(--text); font-size: 13px; line-height: 1.5; }
+    .wt-nova { color: var(--gold); font-size: 13px; line-height: 1.5; }
+    .wt-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 40px;
+    }
+
+    .empty-icon { font-size: 40px; margin-bottom: 16px; }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .empty-desc { font-size: 14px; color: var(--muted); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success::before { content: '✓'; color: var(--green); font-weight: 700; }
+    .toast.error::before { content: '✗'; color: var(--red); font-weight: 700; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+
+      .sidebar {
+        position: static;
+        height: auto;
+        flex-direction: row;
+        align-items: center;
+        padding: 14px 16px;
+        gap: 6px;
+        overflow-x: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .sidebar-logo { display: none; }
+      .sidebar-spacer { display: none; }
+      .sidebar-agent { display: none; }
+      .sidebar-section { margin-bottom: 0; display: flex; flex-direction: row; gap: 4px; }
+      .sidebar-label { display: none; }
+
+      .sidebar-item {
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 10px;
+        font-size: 10px;
+        white-space: nowrap;
+        align-items: center;
+        text-align: center;
+      }
+
+      main { padding: 20px 16px; }
+
+      .quick-actions { grid-template-columns: repeat(3, 1fr); }
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+
+      .lead-details { grid-template-columns: 1fr; }
+      .table-head, .table-row { grid-template-columns: 2fr 1fr 80px; }
+      .table-head > :nth-child(3),
+      .table-head > :nth-child(4),
+      .table-row > :nth-child(3),
+      .table-row > :nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- AUTH WALL -->
+<div id="authWall">
+  <div class="auth-box">
+    <div class="auth-logo">Nova</div>
+    <div class="auth-sub">Ingresa tu token de acceso</div>
+    <input class="auth-input" type="password" id="tokenInput" placeholder="Token de acceso" autocomplete="off" />
+    <button class="auth-btn" id="authBtn">Entrar</button>
+    <div class="auth-error" id="authError">Token incorrecto. Intenta de nuevo.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">Nova</div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">Panel</div>
+        <button class="sidebar-item active" data-page="home" onclick="navTo('home', this)">
+          🏠 <span>Inicio</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section" style="margin-top:8px">
+        <div class="sidebar-label">Pendientes</div>
+        <button class="sidebar-item" data-page="posts" onclick="navTo('posts', this)">
+          📱 <span>Publicaciones</span>
+          <span class="badge blue" id="badgePosts">2</span>
+        </button>
+        <button class="sidebar-item" data-page="emails" onclick="navTo('emails', this)">
+          📧 <span>Correos</span>
+          <span class="badge" id="badgeEmails">1</span>
+        </button>
+        <button class="sidebar-item" data-page="leads" onclick="navTo('leads', this)">
+          🏆 <span>Prospectos</span>
+          <span class="badge gold" id="badgeLeads">3</span>
+        </button>
+      </div>
+
+      <div class="sidebar-section" style="margin-top:8px">
+        <div class="sidebar-label">Gestión</div>
+        <button class="sidebar-item" data-page="listings" onclick="navTo('listings', this)">
+          🏡 <span>Propiedades</span>
+        </button>
+        <button class="sidebar-item" data-page="expenses" onclick="navTo('expenses', this)">
+          💰 <span>Gastos</span>
+        </button>
+      </div>
+
+      <div class="sidebar-spacer"></div>
+
+      <div class="sidebar-agent">
+        <div class="agent-avatar" id="agentInitials">--</div>
+        <div>
+          <div class="agent-name" id="agentName">Cargando...</div>
+          <div class="agent-role">Agente Nova</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main>
+
+      <!-- HOME PAGE -->
+      <div class="page active" id="page-home">
+        <div class="page-header">
+          <h1>Buenos días, <span id="greetingName">Agente</span> 👋</h1>
+          <p id="greetingDate">Hoy es miércoles 10 de junio</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+          <button class="qa-btn" onclick="showToast('Cargando gastos del mes...')">
+            <span class="qa-icon">💰</span>
+            <div class="qa-label">Gastos este mes</div>
+          </button>
+          <button class="qa-btn" onclick="navTo('listings', null)">
+            <span class="qa-icon">🏡</span>
+            <div class="qa-label">Mis propiedades</div>
+          </button>
+          <button class="qa-btn" onclick="showToast('Abre WhatsApp y escribe: escribir ficha')">
+            <span class="qa-icon">✍️</span>
+            <div class="qa-label">Escribir ficha</div>
+          </button>
+          <button class="qa-btn" onclick="showToast('Nova enviará tu reporte por WhatsApp en segundos...')">
+            <span class="qa-icon">📊</span>
+            <div class="qa-label">Reporte mensual</div>
+          </button>
+          <button class="qa-btn" onclick="showToast('Número Nova: +52 777 991 6778 · Escribe "ayuda" o "links"')">
+            <span class="qa-icon">🔗</span>
+            <div class="qa-label">Links y ayuda</div>
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+          <div class="stat-card">
+            <div class="stat-label">Prospectos este mes</div>
+            <div class="stat-value stat-gold" id="statLeads">—</div>
+            <div class="stat-sub">atendidos por Nova</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Publicaciones</div>
+            <div class="stat-value" id="statPosts">—</div>
+            <div class="stat-sub">este mes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Gastos del mes</div>
+            <div class="stat-value" id="statExpenses">—</div>
+            <div class="stat-sub">registrados</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Propiedades activas</div>
+            <div class="stat-value" id="statListings">—</div>
+            <div class="stat-sub">en cartera</div>
+          </div>
+        </div>
+
+        <!-- Pending items preview -->
+        <div class="section-header">
+          <div class="section-title">Pendientes de aprobación</div>
+          <div class="section-count" id="pendingCount"></div>
+        </div>
+        <div id="homePendingList" class="cards-list"></div>
+      </div>
+
+      <!-- POSTS PAGE -->
+      <div class="page" id="page-posts">
+        <div class="page-header">
+          <h1>Publicaciones</h1>
+          <p>Aprueba o rechaza antes de publicar en Instagram y Facebook.</p>
+        </div>
+        <div id="postsList" class="cards-list"></div>
+      </div>
+
+      <!-- EMAILS PAGE -->
+      <div class="page" id="page-emails">
+        <div class="page-header">
+          <h1>Correos</h1>
+          <p>Nova redactó estas respuestas. Edítalas si quieres, luego envía.</p>
+        </div>
+        <div id="emailsList" class="cards-list"></div>
+      </div>
+
+      <!-- LEADS PAGE -->
+      <div class="page" id="page-leads">
+        <div class="page-header">
+          <h1>Prospectos</h1>
+          <p>Leads calificados por Nova. Los marcados en rojo están listos para contactar.</p>
+        </div>
+        <div id="leadsList" class="cards-list"></div>
+      </div>
+
+      <!-- LISTINGS PAGE -->
+      <div class="page" id="page-listings">
+        <div class="page-header">
+          <h1>Mis propiedades</h1>
+          <p>Administra tu cartera. Nova las consulta cuando un prospecto pregunta por opciones.</p>
+        </div>
+
+        <div class="listings-toolbar">
+          <input class="search-input" placeholder="Buscar por colonia, precio o tipo..." id="listingSearch" />
+          <button class="filter-btn active" onclick="filterListings('all', this)">Todas</button>
+          <button class="filter-btn" onclick="filterListings('active', this)">Activas</button>
+          <button class="filter-btn" onclick="filterListings('sold', this)">Vendidas</button>
+          <button class="btn-new" onclick="showToast('Dile a Nova: "agregar propiedad" por WhatsApp, o envíale el PDF de la ficha.')">
+            ＋ Agregar
+          </button>
+        </div>
+
+        <div class="listings-table" id="listingsTable">
+          <div class="table-head">
+            <div>Propiedad</div>
+            <div>Precio</div>
+            <div>Tipo</div>
+            <div>Estado</div>
+            <div>Acciones</div>
+          </div>
+          <div id="listingsBody"></div>
+        </div>
+      </div>
+
+      <!-- EXPENSES PAGE -->
+      <div class="page" id="page-expenses">
+        <div class="page-header">
+          <h1>Gastos</h1>
+          <p>Todos los gastos que le dictaste a Nova este mes.</p>
+        </div>
+
+        <div class="expenses-month-header">
+          <div class="month-label" id="expenseMonthLabel">Junio 2026</div>
+          <div class="month-total" id="expenseTotal">$0</div>
+        </div>
+
+        <div class="expenses-list" id="expensesList">
+          <div class="empty-state">
+            <div class="empty-icon">💰</div>
+            <div class="empty-title">Sin gastos registrados este mes</div>
+            <div class="empty-desc">Dile a Nova: "gasté $800 en gasolina" y lo guardará automáticamente.</div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ──
+// URL params: panel.html?client=CLIENT_SLUG&token=TOKEN
+const API_BASE = 'https://mesa-digital-ke7b.onrender.com';
+
+const params = new URLSearchParams(window.location.search);
+const CLIENT_SLUG = params.get('client') || '';
+const ACCESS_TOKEN = params.get('token') || '';
+
+// ── AUTH ──
+// Simple token check matching the URL param
+document.getElementById('authBtn').onclick = function() {
+  const input = document.getElementById('tokenInput').value.trim();
+  if (input === ACCESS_TOKEN && ACCESS_TOKEN !== '') {
+    document.getElementById('authWall').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('authError').style.display = 'block';
+  }
+};
+
+document.getElementById('tokenInput').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') document.getElementById('authBtn').click();
+});
+
+// Auto-login if token is in URL (direct dashboard links)
+if (ACCESS_TOKEN) {
+  // Panel accessible directly via URL with token
+  document.getElementById('authWall').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  window.addEventListener('DOMContentLoaded', init);
+}
+
+// ── NAVIGATION ──
+function navTo(pageId, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  if (btn) {
+    btn.classList.add('active');
+  } else {
+    document.querySelector(`[data-page="${pageId}"]`)?.classList.add('active');
+  }
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── GREETING ──
+function setGreeting(agentName) {
+  const hours = new Date().getHours();
+  const greet = hours < 12 ? 'Buenos días' : hours < 18 ? 'Buenas tardes' : 'Buenas noches';
+  document.querySelector('#page-home .page-header h1').innerHTML =
+    `${greet}, <span id="greetingName">${agentName || 'Agente'}</span> 👋`;
+
+  const days = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const months = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const now = new Date();
+  document.getElementById('greetingDate').textContent =
+    `Hoy es ${days[now.getDay()]} ${now.getDate()} de ${months[now.getMonth()]}`;
+}
+
+// ── SAMPLE DATA (used when API returns nothing / for demo) ──
+const samplePosts = [
+  {
+    id: 'post-001',
+    type: 'post',
+    title: 'Depto Polanco · Publicación lista',
+    timestamp: 'Hace 2 horas',
+    caption: '✨ Departamento disponible en el corazón de Polanco.\n\n80m² | 2 recámaras | Piso 8 con vista\nEstacionamiento + cuarto de servicio incluidos.\n\n$3,800,000 MXN\n\n📲 Escríbeme para más información.\n\n#Polanco #BienesRaíces #CDMX #InmobiliariasCDMX',
+    platforms: ['Instagram', 'Facebook'],
+    hasStory: true,
+  },
+  {
+    id: 'post-002',
+    type: 'post',
+    title: 'Casa Lomas de Chapultepec · Lista',
+    timestamp: 'Hace 5 horas',
+    caption: '🏡 Casa de lujo en Lomas de Chapultepec.\n\n320m² | 4 recámaras | Jardín privado\nSeguridad 24hrs | Estacionamiento para 3 autos.\n\n$18,500,000 MXN\n\n#Lomas #CasaEnVenta #LujoInmobiliario',
+    platforms: ['Instagram'],
+    hasStory: false,
+  },
+];
+
+const sampleEmails = [
+  {
+    id: 'email-001',
+    type: 'email',
+    title: 'RE: Visita departamento Polanco',
+    timestamp: 'Hace 1 hora',
+    from: 'andreina.morales@gmail.com',
+    subject: 'RE: Departamento Polanco — Confirmación visita',
+    snippet: 'Hola Carlos, muchas gracias por la información. Nos gustaría agendar una visita para el próximo jueves 12 de junio por la tarde...',
+    draft: `Hola Andreina,\n\nMe da gusto saber que les interesa el departamento.\n\nPerfecto, quedamos el jueves 12 de junio. ¿Les funciona a las 4:00 PM o prefieren a las 5:00 PM?\n\nLes confirmo la dirección exacta una vez que me indiquen la hora.\n\nSaludos,\nCarlos`,
+  }
+];
+
+const sampleLeads = [
+  {
+    id: 'lead-001',
+    type: 'lead',
+    title: 'Marcos T. · Prospecto caliente 🔥',
+    timestamp: 'Hace 15 min',
+    hot: true,
+    phone: '+52 55 1234 5678',
+    budget: '$4,000,000 MXN',
+    type_search: 'Compra',
+    bedrooms: '2–3 rec.',
+    colonia: 'Polanco, Lomas',
+    timeline: 'Este mes',
+    transcript: [
+      { side: 'lead', text: 'Hola vi tu anuncio del depto en Polanco' },
+      { side: 'nova', text: '¡Hola! Soy Nova, asistente de Carlos 😊 El depto sigue disponible. ¿Me cuentas un poco más? ¿Buscas para renta o compra?' },
+      { side: 'lead', text: 'Compra. Tengo hasta 4 millones, busco 2 o 3 recámaras en Polanco o Lomas' },
+      { side: 'nova', text: 'Perfecto, ese presupuesto encaja bien con varias opciones en cartera. ¿Para cuándo lo necesitas?' },
+      { side: 'lead', text: 'Lo más pronto posible, estamos decididos' },
+    ]
+  },
+  {
+    id: 'lead-002',
+    type: 'lead',
+    title: 'Laura S. · Interesada en renta',
+    timestamp: 'Hace 2 horas',
+    hot: false,
+    phone: '+52 55 9876 5432',
+    budget: '$18,000 MXN/mes',
+    type_search: 'Renta',
+    bedrooms: '1 rec.',
+    colonia: 'Condesa, Roma',
+    timeline: 'Próximo mes',
+    transcript: [
+      { side: 'lead', text: 'Hola busco un depto en renta en la Condesa o Roma, 1 recámara' },
+      { side: 'nova', text: '¡Hola Laura! Tengo algunas opciones en esas colonias. ¿Cuál es tu presupuesto para la renta?' },
+      { side: 'lead', text: 'Hasta 18 mil al mes' },
+    ]
+  },
+  {
+    id: 'lead-003',
+    type: 'lead',
+    title: 'Roberto V. · Pregunta de precio',
+    timestamp: 'Hace 4 horas',
+    hot: false,
+    phone: '+52 55 5555 6666',
+    budget: 'Por confirmar',
+    type_search: 'Compra',
+    bedrooms: '3+ rec.',
+    colonia: 'Santa Fe',
+    timeline: 'Sin urgencia',
+    transcript: [
+      { side: 'lead', text: '¿Cuánto cuesta el depto de Santa Fe?' },
+      { side: 'nova', text: 'Hola! El departamento en Santa Fe está en $8,200,000 MXN. Incluye 3 recámaras, 2.5 baños y estacionamiento para 2 autos. ¿Te gustaría conocer más detalles o agendar una visita?' },
+      { side: 'lead', text: 'Ok gracias, lo voy a platicar con mi esposa' },
+    ]
+  },
+];
+
+const sampleListings = [
+  { id: 'L001', name: 'Depto Polanco', subtitle: 'Av. Presidente Masaryk 123', price: '$3,800,000', type: 'Departamento', status: 'active' },
+  { id: 'L002', name: 'Casa Lomas', subtitle: 'Sierra Nevada 456', price: '$18,500,000', type: 'Casa', status: 'active' },
+  { id: 'L003', name: 'Depto Roma Norte', subtitle: 'Orizaba 78, Piso 3', price: '$5,200 / mes', type: 'Departamento', status: 'active' },
+  { id: 'L004', name: 'Oficina Santa Fe', subtitle: 'Av. Vasco de Quiroga', price: '$12,000,000', type: 'Oficina', status: 'sold' },
+];
+
+const sampleExpenses = [
+  { date: '10 jun', desc: 'Gasolina visita Polanco', category: 'Transporte', amount: 850 },
+  { date: '9 jun', desc: 'Impresión fichas técnicas', category: 'Marketing', amount: 450 },
+  { date: '8 jun', desc: 'Comida con clientes', category: 'Representación', amount: 1240 },
+  { date: '5 jun', desc: 'Fotografía Depto Lomas', category: 'Marketing', amount: 3500 },
+  { date: '3 jun', desc: 'Gasolina visita Santa Fe', category: 'Transporte', amount: 620 },
+];
+
+// ── RENDER FUNCTIONS ──
+
+function renderPostCard(post) {
+  return `
+    <div class="card" id="${post.id}">
+      <div class="card-header">
+        <span class="card-type-badge badge-post">Publicación</span>
+        <div class="card-meta">
+          <div class="card-title">${post.title}</div>
+          <div class="card-timestamp">${post.timestamp}</div>
+        </div>
+      </div>
+      <div class="post-image" style="display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);">📷 Imagen adjunta</div>
+      <div class="post-caption">${post.caption.replace(/\n/g, '<br>')}</div>
+      <div class="post-targets">
+        ${post.platforms.map(p => `<span class="platform-tag">${p === 'Instagram' ? '📸' : '📘'} ${p}</span>`).join('')}
+        ${post.hasStory ? '<span class="platform-tag">✦ Story automático</span>' : ''}
+      </div>
+      <div class="card-actions">
+        <button class="btn-approve" onclick="approvePost('${post.id}')">✓ Publicar ahora</button>
+        <button class="btn-reject" onclick="rejectCard('${post.id}')">Descartar</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderEmailCard(email) {
+  return `
+    <div class="card" id="${email.id}">
+      <div class="card-header">
+        <span class="card-type-badge badge-email">Correo</span>
+        <div class="card-meta">
+          <div class="card-title">${email.subject}</div>
+          <div class="card-timestamp">${email.timestamp}</div>
+        </div>
+      </div>
+      <div class="email-thread">
+        <div class="email-from">De: ${email.from}</div>
+        <div class="email-subject">${email.subject}</div>
+        <div class="email-snippet">${email.snippet}</div>
+      </div>
+      <div class="email-draft">
+        <div class="draft-label">Borrador de Nova — edita antes de enviar</div>
+        <textarea class="draft-editable" id="draft-${email.id}">${email.draft}</textarea>
+      </div>
+      <div class="card-actions">
+        <button class="btn-send-email" onclick="sendEmail('${email.id}')">✉ Enviar respuesta</button>
+        <button class="btn-reject" onclick="rejectCard('${email.id}')">Archivar</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderLeadCard(lead) {
+  const transcriptHtml = lead.transcript.map(msg =>
+    `<p><span class="${msg.side === 'lead' ? 't-lead' : 't-nova'}">${msg.side === 'lead' ? '👤' : '✨'} ${msg.text}</span></p>`
+  ).join('');
+
+  return `
+    <div class="card" id="${lead.id}">
+      <div class="card-header">
+        <span class="card-type-badge ${lead.hot ? 'badge-hot' : 'badge-lead'}">${lead.hot ? '🔥 Caliente' : 'Prospecto'}</span>
+        <div class="card-meta">
+          <div class="card-title">${lead.title}</div>
+          <div class="card-timestamp">${lead.timestamp}</div>
+        </div>
+      </div>
+      ${lead.hot ? `
+      <div class="hot-indicator">
+        <div class="hot-dot"></div>
+        Listo para contactar — presupuesto confirmado, timeline: ${lead.timeline}
+      </div>` : ''}
+      <div class="lead-details">
+        <div class="lead-detail"><div class="lead-detail-label">Presupuesto</div><div class="lead-detail-value">${lead.budget}</div></div>
+        <div class="lead-detail"><div class="lead-detail-label">Operación</div><div class="lead-detail-value">${lead.type_search}</div></div>
+        <div class="lead-detail"><div class="lead-detail-label">Recámaras</div><div class="lead-detail-value">${lead.bedrooms}</div></div>
+        <div class="lead-detail"><div class="lead-detail-label">Colonia preferida</div><div class="lead-detail-value">${lead.colonia}</div></div>
+      </div>
+      <div class="lead-transcript">${transcriptHtml}</div>
+      <div class="card-actions">
+        <a class="btn-contact" href="https://wa.me/${lead.phone.replace(/\D/g,'')}" target="_blank">
+          💬 Contactar por WhatsApp
+        </a>
+        <button class="btn-reject" onclick="rejectCard('${lead.id}')">Archivar</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderListingsTable(listings) {
+  if (!listings.length) {
+    document.getElementById('listingsBody').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏡</div>
+        <div class="empty-title">Sin propiedades</div>
+        <div class="empty-desc">Dile a Nova: "agregar propiedad" y te pedirá los detalles.</div>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('listingsBody').innerHTML = listings.map(l => {
+    const statusMap = { active: ['status-active', 'Activa'], sold: ['status-sold', 'Vendida'], paused: ['status-paused', 'Pausada'] };
+    const [cls, label] = statusMap[l.status] || ['status-paused', l.status];
+    return `
+      <div class="table-row" data-status="${l.status}">
+        <div>
+          <div class="cell-prop">${l.name}</div>
+          <div class="cell-sub">${l.subtitle}</div>
+        </div>
+        <div class="cell-price">${l.price}</div>
+        <div class="cell-text">${l.type}</div>
+        <div><span class="status-pill ${cls}">${label}</span></div>
+        <div class="row-actions">
+          <button class="icon-btn" title="Editar" onclick="showToast('Dile a Nova: "editar propiedad ${l.name}"')">✏</button>
+          <button class="icon-btn" title="Marcar vendida" onclick="markSold('${l.id}', this)">✓</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderExpenses(expenses) {
+  if (!expenses.length) return;
+  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+  document.getElementById('expenseTotal').textContent = `$${total.toLocaleString('es-MX')}`;
+
+  document.getElementById('expensesList').innerHTML = expenses.map(e => `
+    <div class="expense-row">
+      <div>
+        <div class="expense-desc">${e.desc}</div>
+        <div class="expense-cat">${e.category}</div>
+      </div>
+      <div class="expense-date">${e.date}</div>
+      <div class="expense-amount">$${e.amount.toLocaleString('es-MX')}</div>
+    </div>
+  `).join('');
+}
+
+// ── ACTIONS ──
+
+function approvePost(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '0';
+  el.style.transform = 'scale(0.97)';
+  el.style.transition = 'all 0.3s ease';
+  setTimeout(() => {
+    el.remove();
+    showToast('Publicación enviada a Instagram y Facebook', 'success');
+    updateBadge('badgePosts', -1);
+  }, 300);
+}
+
+function sendEmail(id) {
+  const draft = document.getElementById('draft-' + id).value;
+  const card = document.getElementById(id);
+  card.style.opacity = '0';
+  card.style.transform = 'scale(0.97)';
+  card.style.transition = 'all 0.3s ease';
+  setTimeout(() => {
+    card.remove();
+    showToast('Correo enviado', 'success');
+    updateBadge('badgeEmails', -1);
+  }, 300);
+}
+
+function rejectCard(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '0';
+  el.style.transform = 'translateX(-10px)';
+  el.style.transition = 'all 0.3s ease';
+  setTimeout(() => el.remove(), 300);
+}
+
+function markSold(id, btn) {
+  btn.closest('.table-row').querySelector('.status-pill').className = 'status-pill status-sold';
+  btn.closest('.table-row').querySelector('.status-pill').textContent = 'Vendida';
+  showToast(`Propiedad marcada como vendida`, 'success');
+}
+
+let listingData = [];
+function filterListings(status, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const rows = document.querySelectorAll('.table-row');
+  rows.forEach(row => {
+    if (status === 'all' || row.dataset.status === status) {
+      row.style.display = '';
+    } else {
+      row.style.display = 'none';
+    }
+  });
+}
+
+let badgeValues = { badgePosts: 2, badgeEmails: 1, badgeLeads: 3 };
+function updateBadge(badgeId, delta) {
+  badgeValues[badgeId] = Math.max(0, (badgeValues[badgeId] || 0) + delta);
+  const el = document.getElementById(badgeId);
+  if (el) {
+    if (badgeValues[badgeId] === 0) {
+      el.style.display = 'none';
+    } else {
+      el.textContent = badgeValues[badgeId];
+    }
+  }
+}
+
+// ── INIT ──
+async function init() {
+  setGreeting('Agente');
+
+  // Render sample data (in production these would come from API)
+  const postsList = document.getElementById('postsList');
+  postsList.innerHTML = samplePosts.map(renderPostCard).join('');
+
+  const emailsList = document.getElementById('emailsList');
+  emailsList.innerHTML = sampleEmails.map(renderEmailCard).join('');
+
+  const leadsList = document.getElementById('leadsList');
+  leadsList.innerHTML = sampleLeads.map(renderLeadCard).join('');
+
+  renderListingsTable(sampleListings);
+  renderExpenses(sampleExpenses);
+
+  // Home page pending preview (first 2 items)
+  const homeList = document.getElementById('homePendingList');
+  homeList.innerHTML = [
+    renderLeadCard(sampleLeads.find(l => l.hot)),
+    renderEmailCard(sampleEmails[0]),
+  ].join('');
+  document.getElementById('pendingCount').textContent =
+    `${samplePosts.length + sampleEmails.length + sampleLeads.length} pendientes en total`;
+
+  // Stats
+  document.getElementById('statLeads').textContent = '12';
+  document.getElementById('statPosts').textContent = '8';
+  document.getElementById('statExpenses').textContent = '$6,660';
+  document.getElementById('statListings').textContent = '3';
+
+  // Try to load real data from API
+  try {
+    if (CLIENT_SLUG) {
+      await loadRealData();
+    }
+  } catch (e) {
+    console.log('API not reachable yet — using sample data');
+  }
+}
+
+async function loadRealData() {
+  // Load listings
+  const listRes = await fetch(`${API_BASE}/nova/listings/${CLIENT_SLUG}`, {
+    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+  });
+  if (listRes.ok) {
+    const data = await listRes.json();
+    if (data.listings?.length) {
+      renderListingsTable(data.listings.map(l => ({
+        id: l.id,
+        name: l.title || l.address,
+        subtitle: l.neighborhood || '',
+        price: l.price ? `$${Number(l.price).toLocaleString('es-MX')}` : '—',
+        type: l.listing_type || 'Propiedad',
+        status: l.status || 'active',
+      })));
+      document.getElementById('statListings').textContent = data.listings.filter(l => l.status === 'active').length;
+    }
+  }
+
+  // Load expenses
+  const expRes = await fetch(`${API_BASE}/nova/expenses/${CLIENT_SLUG}`, {
+    headers: { 'Authorization': `Bearer ${ACCESS_TOKEN}` }
+  });
+  if (expRes.ok) {
+    const data = await expRes.json();
+    if (data.expenses?.length) {
+      const mapped = data.expenses.map(e => ({
+        date: new Date(e.created_at).toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }),
+        desc: e.description,
+        category: e.category || 'General',
+        amount: e.amount,
+      }));
+      renderExpenses(mapped);
+      const total = mapped.reduce((s, e) => s + e.amount, 0);
+      document.getElementById('statExpenses').textContent = `$${total.toLocaleString('es-MX')}`;
+    }
+  }
+}
+
+// Agent name from URL param
+if (params.get('name')) {
+  const name = decodeURIComponent(params.get('name'));
+  document.getElementById('agentName').textContent = name;
+  document.getElementById('agentInitials').textContent = name.charAt(0).toUpperCase();
+  setGreeting(name.split(' ')[0]);
+}
+
+// Month label
+const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+document.getElementById('expenseMonthLabel').textContent = `${months[new Date().getMonth()]} ${new Date().getFullYear()}`;
+</script>
+</body>
+</html>

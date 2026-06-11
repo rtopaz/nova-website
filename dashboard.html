@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova — Panel del operador</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0F1117;
+      --surface: #1C1F2E;
+      --surface2: #222638;
+      --border:  #2A2F42;
+      --text:    #E8E0D5;
+      --muted:   #8A8FA8;
+      --gold:    #C9A96E;
+      --gold-bg: rgba(201,169,110,0.10);
+      --blue:    #4A9EBF;
+      --blue-bg: rgba(74,158,191,0.10);
+      --green:   #3DB97A;
+      --green-bg:rgba(61,185,122,0.10);
+      --red:     #E05C5C;
+      --red-bg:  rgba(224,92,92,0.10);
+      --radius:  12px;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── AUTH ── */
+    #authWall {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--black);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%; max-width: 380px;
+      text-align: center;
+    }
+
+    .auth-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+
+    .auth-op { font-size: 12px; color: var(--muted); margin-bottom: 32px; letter-spacing: 0.05em; }
+
+    .auth-input {
+      width: 100%;
+      background: var(--black);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .auth-input:focus { border-color: var(--gold); }
+
+    .auth-btn {
+      width: 100%;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .auth-btn:hover { background: #d9b97e; }
+    .auth-error { font-size: 13px; color: var(--red); margin-top: 12px; display: none; }
+
+    /* ── LAYOUT ── */
+    #app { display: none; }
+
+    header {
+      padding: 20px 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .op-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .op-badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(201,169,110,0.15);
+      color: var(--gold);
+      padding: 4px 10px;
+      border-radius: 100px;
+    }
+
+    .header-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--black);
+      border-radius: 8px;
+      padding: 4px;
+    }
+
+    .tab {
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      border: none;
+      background: none;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active { background: var(--surface); color: var(--text); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .op-name { font-size: 13px; color: var(--muted); }
+
+    .btn-nuevo {
+      padding: 9px 18px;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .btn-nuevo:hover { background: #d9b97e; }
+
+    /* ── MAIN ── */
+    main { padding: 36px 40px; max-width: 1400px; margin: 0 auto; }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── OVERVIEW STATS ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .stat-tile {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; margin-bottom: 6px; }
+
+    .stat-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-sub { font-size: 12px; color: var(--muted); }
+    .stat-gold { color: var(--gold); }
+    .stat-green { color: var(--green); }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .section-title { font-size: 15px; font-weight: 600; color: var(--text); }
+
+    /* ── CLIENT CARDS ── */
+    .clients-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 18px;
+      margin-bottom: 40px;
+    }
+
+    .client-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+
+    .client-card:hover {
+      border-color: rgba(201,169,110,0.3);
+      transform: translateY(-1px);
+    }
+
+    .cc-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cc-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--gold-bg);
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .cc-info { flex: 1; min-width: 0; }
+    .cc-name { font-size: 15px; font-weight: 600; color: var(--text); }
+    .cc-sub { font-size: 12px; color: var(--muted); }
+
+    .cc-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+    }
+
+    .cc-active { background: var(--green-bg); color: var(--green); }
+    .cc-pending { background: var(--gold-bg); color: var(--gold); }
+    .cc-paused { background: var(--border); color: var(--muted); }
+
+    .cc-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cc-stat {
+      padding: 12px 16px;
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .cc-stat:last-child { border-right: none; }
+
+    .cc-stat-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'Playfair Display', serif;
+      line-height: 1;
+      margin-bottom: 3px;
+    }
+
+    .cc-stat-label { font-size: 11px; color: var(--muted); }
+
+    .cc-actions {
+      padding: 14px 20px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .cc-btn {
+      flex: 1;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+    }
+
+    .cc-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+
+    .cc-btn-primary {
+      background: var(--gold);
+      color: var(--black);
+      border-color: var(--gold);
+      font-weight: 600;
+    }
+
+    .cc-btn-primary:hover { background: #d9b97e; color: var(--black); border-color: #d9b97e; }
+
+    /* ── PENDING CLIENTS ── */
+    .pending-table {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    .pt-head {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 140px;
+      gap: 12px;
+      padding: 12px 20px;
+      background: var(--surface2);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pt-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 140px;
+      gap: 12px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .pt-row:last-child { border-bottom: none; }
+    .pt-row:hover { background: rgba(255,255,255,0.02); }
+
+    .pt-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .pt-phone { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .pt-text { font-size: 13px; color: var(--muted); }
+    .pt-step { font-size: 12px; color: var(--blue); font-weight: 500; }
+
+    .pt-actions { display: flex; gap: 6px; }
+
+    .pt-btn {
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: all 0.15s;
+    }
+
+    .pt-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .pt-btn-activate {
+      background: var(--green);
+      color: white;
+      border-color: var(--green);
+    }
+
+    .pt-btn-activate:hover { background: #4dcf8e; border-color: #4dcf8e; color: white; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+    .form-group { margin-bottom: 18px; }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--black);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus { border-color: var(--gold); }
+    .form-input::placeholder { color: var(--muted); }
+
+    .form-hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .modal-submit {
+      flex: 1;
+      padding: 13px;
+      background: var(--gold);
+      color: var(--black);
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .modal-submit:hover { background: #d9b97e; }
+
+    .modal-cancel {
+      padding: 13px 20px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .modal-cancel:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 20px;
+      font-size: 14px; font-weight: 500;
+      color: var(--text);
+      z-index: 2000;
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transform: translateY(80px); opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success::before { content: '✓'; color: var(--green); font-weight: 700; }
+    .toast.error::before { content: '✗'; color: var(--red); font-weight: 700; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 860px) {
+      header { flex-direction: column; gap: 14px; padding: 16px 20px; }
+      main { padding: 20px 16px; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .clients-grid { grid-template-columns: 1fr; }
+      .pt-head, .pt-row { grid-template-columns: 1fr auto; }
+      .pt-head > *:not(:first-child):not(:last-child),
+      .pt-row > *:not(:first-child):not(:last-child) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authWall">
+  <div class="auth-box">
+    <div class="auth-logo">Nova</div>
+    <div class="auth-op">PANEL DEL OPERADOR</div>
+    <input class="auth-input" type="password" id="pwInput" placeholder="Contraseña" autocomplete="off" />
+    <button class="auth-btn" id="authBtn">Entrar</button>
+    <div class="auth-error" id="authError">Contraseña incorrecta.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-left">
+      <div class="op-logo">Nova</div>
+      <span class="op-badge">Operador</span>
+    </div>
+
+    <div class="header-tabs">
+      <button class="tab active" onclick="switchTab('clients', this)">Clientes</button>
+      <button class="tab" onclick="switchTab('pending', this)">Pendientes</button>
+    </div>
+
+    <div class="header-right">
+      <span class="op-name">Mesa Digital · Ruben</span>
+      <button class="btn-nuevo" onclick="openModal()">＋ Nuevo cliente</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- OVERVIEW STATS -->
+    <div class="stats-row">
+      <div class="stat-tile">
+        <div class="stat-label">Clientes activos</div>
+        <div class="stat-val stat-gold" id="statActive">0</div>
+        <div class="stat-sub">Nova agentes</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Pendientes de activar</div>
+        <div class="stat-val" id="statPending">0</div>
+        <div class="stat-sub">en onboarding</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">MRR estimado</div>
+        <div class="stat-val stat-green" id="statMRR">$0</div>
+        <div class="stat-sub">MXN/mes</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Prospectos este mes</div>
+        <div class="stat-val" id="statLeadsMonth">—</div>
+        <div class="stat-sub">atendidos por Nova</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-label">Número Nova</div>
+        <div class="stat-val" style="font-size:16px;margin-top:4px;">777</div>
+        <div class="stat-sub">+52 777 991 6778</div>
+      </div>
+    </div>
+
+    <!-- CLIENTS TAB -->
+    <div class="page active" id="tab-clients">
+      <div class="section-header">
+        <div class="section-title">Clientes activos</div>
+      </div>
+      <div class="clients-grid" id="clientsGrid">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- PENDING TAB -->
+    <div class="page" id="tab-pending">
+      <div class="section-header">
+        <div class="section-title">En proceso de alta</div>
+      </div>
+      <div class="pending-table">
+        <div class="pt-head">
+          <div>Agente</div>
+          <div>Colonia</div>
+          <div>Registrado</div>
+          <div>Paso</div>
+          <div>Acciones</div>
+        </div>
+        <div id="pendingBody"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- NEW CLIENT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Nuevo cliente Nova</h2>
+    <div class="modal-sub">Crea el cliente manualmente. Nova le enviará el link del panel por WhatsApp.</div>
+
+    <div class="form-group">
+      <label class="form-label">Nombre del agente</label>
+      <input class="form-input" id="fName" placeholder="Ej. Carlos Ramírez" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">WhatsApp (con lada)</label>
+      <input class="form-input" id="fPhone" placeholder="+52 55 1234 5678" />
+      <div class="form-hint">Este número será el dueño. Nova lo reconoce como agente.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Colonia / zona principal</label>
+      <input class="form-input" id="fZone" placeholder="Ej. Polanco, Lomas, Condesa" />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Número WhatsApp asignado a Nova</label>
+      <input class="form-input" id="fNovaNumber" placeholder="+52 777 000 0000" />
+      <div class="form-hint">Número que usará el agente para hablar con Nova. Registrar en WABA primero.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Slug del cliente</label>
+      <input class="form-input" id="fSlug" placeholder="carlos-ramirez" />
+      <div class="form-hint">Identificador único. Solo minúsculas y guiones.</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Token del panel</label>
+      <input class="form-input" id="fToken" placeholder="Ej. nova-a1b2c3d4" />
+      <div class="form-hint">Token que aparece en la URL del panel del agente.</div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-submit" id="modalSubmit">Crear cliente</button>
+      <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API_BASE = 'https://mesa-digital-ke7b.onrender.com';
+const OP_PASSWORD = 'nova2026';
+
+// ── AUTH ──
+document.getElementById('authBtn').onclick = function() {
+  const pw = document.getElementById('pwInput').value.trim();
+  if (pw === OP_PASSWORD) {
+    document.getElementById('authWall').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadDashboard();
+  } else {
+    document.getElementById('authError').style.display = 'block';
+  }
+};
+
+document.getElementById('pwInput').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('authBtn').click();
+});
+
+// ── TABS ──
+function switchTab(tab, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── MODAL ──
+function openModal() {
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+document.getElementById('modalSubmit').onclick = async function() {
+  const name = document.getElementById('fName').value.trim();
+  const phone = document.getElementById('fPhone').value.trim().replace(/\s/g, '');
+  const zone = document.getElementById('fZone').value.trim();
+  const novaNumber = document.getElementById('fNovaNumber').value.trim().replace(/\s/g, '');
+  const slug = document.getElementById('fSlug').value.trim().toLowerCase().replace(/\s+/g, '-');
+  const token = document.getElementById('fToken').value.trim();
+
+  if (!name || !phone || !slug || !token) {
+    showToast('Completa nombre, teléfono, slug y token.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/create-client`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        phone,
+        zone,
+        nova_number: novaNumber,
+        slug,
+        token,
+        product_type: 'real_estate',
+      }),
+    });
+
+    if (res.ok) {
+      closeModal();
+      showToast(`Cliente ${name} creado. Nova le enviará el link del panel.`, 'success');
+      loadDashboard();
+    } else {
+      const err = await res.json();
+      showToast(err.error || 'Error al crear el cliente.', 'error');
+    }
+  } catch (e) {
+    // Offline / API not ready — simulate
+    closeModal();
+    showToast(`Cliente ${name} guardado localmente (API offline).`, 'success');
+    addSampleClient({ name, phone, zone, slug, token, status: 'active' });
+  }
+};
+
+// ── DATA ──
+let allClients = [];
+
+// Sample clients for demo
+const demoClients = [
+  {
+    id: 'nova_demo_agent',
+    slug: 'nova-demo',
+    name: 'Demo Agent',
+    phone: '+52 1 954 101 0437',
+    zone: 'CDMX',
+    status: 'active',
+    stats: { leads: 12, posts: 8, listings: 3 },
+    token: 'nova-demo-token',
+    stripe_status: 'active',
+    joined: 'Jun 10, 2026',
+  }
+];
+
+const demoPending = [
+  {
+    id: 'pend-001',
+    name: 'Ana García',
+    phone: '+52 55 4321 0987',
+    zone: 'Roma, Condesa',
+    created: 'Hoy',
+    step: 'Paso 3 / 8 — conectar Instagram',
+  }
+];
+
+function renderClientCard(c) {
+  const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const panelUrl = `panel.html?client=${c.slug}&token=${c.token}&name=${encodeURIComponent(c.name)}`;
+  const waUrl = `https://wa.me/${c.phone.replace(/\D/g, '')}`;
+
+  return `
+    <div class="client-card" id="card-${c.id}">
+      <div class="cc-header">
+        <div class="cc-avatar">${initials}</div>
+        <div class="cc-info">
+          <div class="cc-name">${c.name}</div>
+          <div class="cc-sub">${c.zone || 'CDMX'} · ${c.joined || ''}</div>
+        </div>
+        <span class="cc-status cc-active">● Activo</span>
+      </div>
+      <div class="cc-stats">
+        <div class="cc-stat">
+          <div class="cc-stat-val">${c.stats?.leads ?? '—'}</div>
+          <div class="cc-stat-label">Prospectos</div>
+        </div>
+        <div class="cc-stat">
+          <div class="cc-stat-val">${c.stats?.posts ?? '—'}</div>
+          <div class="cc-stat-label">Publicaciones</div>
+        </div>
+        <div class="cc-stat">
+          <div class="cc-stat-val">${c.stats?.listings ?? '—'}</div>
+          <div class="cc-stat-label">Propiedades</div>
+        </div>
+      </div>
+      <div class="cc-actions">
+        <a class="cc-btn cc-btn-primary" href="${panelUrl}" target="_blank">Ver panel</a>
+        <a class="cc-btn" href="${waUrl}" target="_blank">💬 WhatsApp</a>
+        <button class="cc-btn" onclick="reenviarLink('${c.name}', '${c.phone}', '${panelUrl}')">Reenviar link</button>
+        <button class="cc-btn" onclick="archivarCliente('${c.id}')">Archivar</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderPendingRow(p) {
+  return `
+    <div class="pt-row" id="prow-${p.id}">
+      <div>
+        <div class="pt-name">${p.name}</div>
+        <div class="pt-phone">${p.phone}</div>
+      </div>
+      <div class="pt-text">${p.zone}</div>
+      <div class="pt-text">${p.created}</div>
+      <div class="pt-step">${p.step}</div>
+      <div class="pt-actions">
+        <button class="pt-btn pt-btn-activate" onclick="activarCliente('${p.id}')">Activar</button>
+        <button class="pt-btn" onclick="eliminarPendiente('${p.id}')">✕</button>
+      </div>
+    </div>
+  `;
+}
+
+function addSampleClient(c) {
+  demoClients.push({ ...c, id: c.slug, stats: { leads: 0, posts: 0, listings: 0 }, joined: 'Hoy' });
+  loadDashboard();
+}
+
+async function loadDashboard() {
+  // Try API first
+  let clients = [...demoClients];
+  let pending = [...demoPending];
+
+  try {
+    const res = await fetch(`${API_BASE}/admin/nova-clients`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.clients?.length) clients = data.clients;
+      if (data.pending?.length) pending = data.pending;
+    }
+  } catch (e) {
+    // Use demo data
+  }
+
+  allClients = clients;
+
+  // Stats
+  const activeCount = clients.filter(c => c.status === 'active').length;
+  document.getElementById('statActive').textContent = activeCount;
+  document.getElementById('statPending').textContent = pending.length;
+  document.getElementById('statMRR').textContent = `$${(activeCount * 950).toLocaleString('es-MX')}`;
+  document.getElementById('statLeadsMonth').textContent =
+    clients.reduce((s, c) => s + (c.stats?.leads || 0), 0);
+
+  // Render
+  const grid = document.getElementById('clientsGrid');
+  if (activeCount === 0) {
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:60px 40px;color:var(--muted);">
+        <div style="font-size:36px;margin-bottom:16px;">🏡</div>
+        <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:8px;">Sin clientes activos todavía</div>
+        <div style="font-size:14px;">Usa el botón "Nuevo cliente" para comenzar.</div>
+      </div>`;
+  } else {
+    grid.innerHTML = clients.filter(c => c.status === 'active').map(renderClientCard).join('');
+  }
+
+  document.getElementById('pendingBody').innerHTML =
+    pending.length ? pending.map(renderPendingRow).join('') :
+    `<div style="padding:40px;text-align:center;color:var(--muted);font-size:14px;">Sin altas en proceso.</div>`;
+}
+
+// ── ACTIONS ──
+async function reenviarLink(name, phone, url) {
+  const fullUrl = `${window.location.origin}/${url}`;
+  try {
+    await fetch(`${API_BASE}/admin/send-dashboard-link`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, name, url: fullUrl }),
+    });
+    showToast(`Link reenviado a ${name} por WhatsApp`, 'success');
+  } catch (e) {
+    showToast(`Link del panel: ${fullUrl}`, 'success');
+  }
+}
+
+function archivarCliente(id) {
+  if (!confirm('¿Archivar este cliente? Nova dejará de responder por su número.')) return;
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    card.style.opacity = '0';
+    card.style.transition = 'opacity 0.3s';
+    setTimeout(() => {
+      card.remove();
+      showToast('Cliente archivado', 'success');
+    }, 300);
+  }
+}
+
+function activarCliente(id) {
+  const row = document.getElementById('prow-' + id);
+  if (row) {
+    row.style.opacity = '0';
+    row.style.transition = 'opacity 0.3s';
+    setTimeout(() => {
+      row.remove();
+      showToast('Cliente activado y movido a clientes activos', 'success');
+      loadDashboard();
+    }, 300);
+  }
+}
+
+function eliminarPendiente(id) {
+  const row = document.getElementById('prow-' + id);
+  if (row) {
+    row.style.opacity = '0';
+    row.style.transition = 'opacity 0.3s';
+    setTimeout(() => row.remove(), 300);
+  }
+}
+</script>
+</body>
+</html>

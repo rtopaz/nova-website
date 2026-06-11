@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova — Tu secretaria IA, 24 horas</title>
+  <meta name="description" content="Nova responde a tus clientes, publica en tus redes y lleva tu agenda. Desde $950/mes." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0F1117;
+      --surface: #1C1F2E;
+      --border:  #2A2F42;
+      --text:    #E8E0D5;
+      --muted:   #8A8FA8;
+      --gold:    #C9A96E;
+      --gold-dim:#8A6B3E;
+      --blue:    #4A9EBF;
+      --green:   #25D366;
+      --radius:  12px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 20px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(15,17,23,0.95) 0%, rgba(15,17,23,0) 100%);
+    }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gold);
+      text-decoration: none;
+      letter-spacing: 0.02em;
+    }
+
+    .nav-links {
+      display: flex; gap: 32px; align-items: center;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--black) !important;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-weight: 600 !important;
+      font-size: 14px !important;
+      transition: background 0.2s, transform 0.15s !important;
+    }
+
+    .nav-cta:hover {
+      background: #d9b97e !important;
+      color: var(--black) !important;
+      transform: translateY(-1px);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      padding: 120px 80px 80px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .hero-text { padding-right: 20px; }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(201,169,110,0.12);
+      border: 1px solid rgba(201,169,110,0.25);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(38px, 4.5vw, 62px);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    h1 em {
+      font-style: normal;
+      color: var(--gold);
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-weight: 300;
+      max-width: 440px;
+    }
+
+    .hero-sub strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gold);
+      color: var(--black);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 14px 28px;
+      border-radius: 10px;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 0 0 0 rgba(201,169,110,0);
+    }
+
+    .btn-primary:hover {
+      background: #d9b97e;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(201,169,110,0.25);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 15px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      background: rgba(201,169,110,0.06);
+    }
+
+    .hero-social-proof {
+      margin-top: 48px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .proof-avatars {
+      display: flex;
+    }
+
+    .proof-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 2px solid var(--black);
+      margin-left: -8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .proof-avatar:first-child { margin-left: 0; }
+
+    .proof-text {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .proof-text strong {
+      color: var(--text);
+      display: block;
+      font-size: 14px;
+    }
+
+    /* ── WHATSAPP DEMO ── */
+    .hero-demo {
+      position: relative;
+    }
+
+    .demo-phone {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
+      max-width: 340px;
+      margin: 0 auto;
+    }
+
+    .demo-phone-header {
+      background: #1F2430;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .demo-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 17px;
+      color: var(--black);
+      flex-shrink: 0;
+    }
+
+    .demo-header-info { flex: 1; }
+    .demo-name { font-size: 15px; font-weight: 600; color: var(--text); }
+    .demo-status { font-size: 12px; color: var(--green); }
+
+    .demo-messages {
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 400px;
+      background: var(--black);
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 82%;
+    }
+
+    .msg.lead { align-self: flex-start; }
+    .msg.nova { align-self: flex-end; }
+
+    .msg-bubble {
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
+    .msg.lead .msg-bubble {
+      background: var(--surface);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.nova .msg-bubble {
+      background: #1B4C3A;
+      color: #E8F5F0;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg-time {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .msg.nova .msg-time { text-align: right; }
+
+    .typing-indicator {
+      display: none;
+      align-self: flex-end;
+      padding: 12px 16px;
+      background: #1B4C3A;
+      border-radius: 14px;
+      border-bottom-right-radius: 4px;
+      gap: 4px;
+    }
+
+    .typing-indicator.visible {
+      display: flex;
+    }
+
+    .typing-dot {
+      width: 6px; height: 6px;
+      background: #4CAF8A;
+      border-radius: 50%;
+      animation: typingBounce 1.2s ease-in-out infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+
+    .demo-glow {
+      position: absolute;
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, rgba(201,169,110,0.08) 0%, transparent 70%);
+      top: -50px; right: -50px;
+      pointer-events: none;
+    }
+
+    /* ── FEATURES GRID ── */
+    .section {
+      padding: 100px 80px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 3.5vw, 46px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 540px;
+      line-height: 1.7;
+      margin-bottom: 64px;
+      font-weight: 300;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(201,169,110,0.4);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      font-size: 26px;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section {
+      padding: 100px 80px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .how-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 48px;
+      margin-top: 64px;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: calc(16.66% + 24px);
+      right: calc(16.66% + 24px);
+      height: 1px;
+      background: var(--border);
+    }
+
+    .step { position: relative; }
+
+    .step-number {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--black);
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .step-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    /* ── PRICING ── */
+    .pricing-card {
+      max-width: 460px;
+      margin: 64px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .pricing-header {
+      padding: 36px 36px 28px;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .pricing-badge {
+      display: inline-block;
+      background: rgba(201,169,110,0.15);
+      color: var(--gold);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .pricing-price {
+      font-family: 'Playfair Display', serif;
+      font-size: 58px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .pricing-currency {
+      font-size: 22px;
+      vertical-align: super;
+      margin-right: 4px;
+      color: var(--gold);
+    }
+
+    .pricing-period {
+      font-size: 15px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .pricing-comparison {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    .pricing-comparison span {
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    .pricing-features {
+      padding: 28px 36px;
+    }
+
+    .pricing-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 14px;
+      color: var(--text);
+      border-bottom: 1px solid rgba(42,47,66,0.5);
+    }
+
+    .pricing-feature:last-child { border-bottom: none; }
+
+    .check {
+      color: var(--gold);
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .pricing-cta {
+      padding: 8px 36px 36px;
+    }
+
+    .pricing-cta .btn-primary {
+      width: 100%;
+      justify-content: center;
+      font-size: 16px;
+      padding: 16px;
+    }
+
+    .pricing-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+    /* ── TESTIMONIAL ── */
+    .testimonial-section {
+      padding: 100px 80px;
+      text-align: center;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .testimonial-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(20px, 2.5vw, 30px);
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--text);
+      max-width: 680px;
+      margin: 0 auto 32px;
+      position: relative;
+    }
+
+    .testimonial-quote::before {
+      content: '"';
+      font-size: 80px;
+      color: var(--gold);
+      opacity: 0.3;
+      line-height: 0;
+      vertical-align: -30px;
+      margin-right: 8px;
+    }
+
+    .testimonial-author {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .testimonial-author strong {
+      color: var(--text);
+      display: block;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+
+    /* ── CTA SECTION ── */
+    .cta-section {
+      padding: 100px 80px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .cta-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .cta-section h2 { margin-bottom: 20px; }
+
+    .cta-section p {
+      font-size: 17px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 40px 80px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .footer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .footer-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .footer-right {
+      font-size: 13px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      .nav-links { display: none; }
+
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 100px 24px 60px;
+        gap: 48px;
+        min-height: auto;
+      }
+
+      .hero-text { padding-right: 0; }
+
+      .hero-sub { max-width: 100%; }
+
+      .demo-phone { max-width: 100%; }
+
+      .section { padding: 72px 24px; }
+      .how-section { padding: 72px 24px; }
+      .testimonial-section { padding: 72px 24px; }
+      .cta-section { padding: 72px 24px; }
+      footer { padding: 32px 24px; flex-direction: column; gap: 16px; text-align: center; }
+      .footer-right { text-align: center; }
+
+      .features-grid { grid-template-columns: 1fr; gap: 16px; }
+      .steps { grid-template-columns: 1fr; gap: 32px; }
+      .steps::before { display: none; }
+
+      .pricing-header { padding: 28px 24px 20px; }
+      .pricing-features { padding: 20px 24px; }
+      .pricing-cta { padding: 8px 24px 28px; }
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Nova</a>
+  <ul class="nav-links">
+    <li><a href="#features">Funciones</a></li>
+    <li><a href="#how">Cómo funciona</a></li>
+    <li><a href="#pricing">Precio</a></li>
+    <li><a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20saber%20más" target="_blank" class="nav-cta">Empieza hoy</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Para agentes inmobiliarios en CDMX</div>
+    <h1>Tu secretaria <em>IA</em>,<br />disponible 24 horas</h1>
+    <p class="hero-sub">
+      Nova contesta a tus clientes, <strong>califica prospectos</strong>, lleva tu agenda, publica en tus redes y redacta tus fichas de propiedades. Todo desde WhatsApp.
+    </p>
+    <div class="hero-actions">
+      <a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20una%20demostración" target="_blank" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652C8.094 23.416 10.04 23.88 12.032 23.88c6.579 0 11.94-5.335 11.942-11.893.001-3.178-1.24-6.165-3.454-8.538z" fill="currentColor"/></svg>
+        Ver demo en vivo
+      </a>
+      <a href="#features" class="btn-secondary">
+        Ver funciones
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </a>
+    </div>
+
+    <div class="hero-social-proof">
+      <div class="proof-avatars">
+        <div class="proof-avatar">CR</div>
+        <div class="proof-avatar">AM</div>
+        <div class="proof-avatar">LS</div>
+      </div>
+      <div class="proof-text">
+        <strong>Únete a los primeros agentes</strong>
+        en tener una secretaria que nunca descansa
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-demo">
+    <div class="demo-glow"></div>
+    <div class="demo-phone">
+      <div class="demo-phone-header">
+        <div class="demo-avatar">N</div>
+        <div class="demo-header-info">
+          <div class="demo-name">Nova</div>
+          <div class="demo-status">● en línea</div>
+        </div>
+      </div>
+      <div class="demo-messages" id="demoMessages">
+        <!-- Messages injected by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-label">Todo lo que Nova hace por ti</div>
+  <h2>Una secretaria completa,<br />sin costo de nómina</h2>
+  <p class="section-sub">Una secretaria en CDMX cuesta $12,000–$15,000 al mes. Nova cuesta $950 y trabaja 24 horas, 7 días a la semana.</p>
+
+  <div class="features-grid">
+    <div class="feature-card fade-up">
+      <span class="feature-icon">💬</span>
+      <div class="feature-title">Responde a tus prospectos 24/7</div>
+      <p class="feature-desc">Nova contesta en segundos, califica al prospecto (presupuesto, colonias, cuartos, plazo) y te avisa cuando hay alguien listo para comprar.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📅</span>
+      <div class="feature-title">Agenda y recordatorios</div>
+      <p class="feature-desc">Guarda citas en Google Calendar con un mensaje de voz. Nova te recuerda 30 minutos antes para que nunca faltes a una visita.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📧</span>
+      <div class="feature-title">Gmail sin abrir el correo</div>
+      <p class="feature-desc">Nova lee tus correos importantes, redacta la respuesta y tú la apruebas con un toque desde tu dashboard. Nunca te enfrentes a una bandeja de entrada llena.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🏡</span>
+      <div class="feature-title">Fichas de propiedades en segundos</div>
+      <p class="feature-desc">Dile a Nova los detalles de la propiedad y te redacta una ficha profesional lista para publicar. También extrae datos de PDFs automáticamente.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📱</span>
+      <div class="feature-title">Instagram y Facebook automáticos</div>
+      <p class="feature-desc">Manda una foto con el pie de foto y Nova la convierte en una publicación. Tú apruebas en el panel, Nova publica. También responde comentarios y DMs.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">💰</span>
+      <div class="feature-title">Control de gastos conversacional</div>
+      <p class="feature-desc">Le dices a Nova cuánto gastaste y en qué. Al final del mes, tienes un resumen completo por WhatsApp y en tu panel.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🌅</span>
+      <div class="feature-title">Briefing matutino a las 8am</div>
+      <p class="feature-desc">Cada mañana Nova te manda un resumen: tus citas del día, prospectos nuevos que llegaron de noche, correos pendientes.</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📊</span>
+      <div class="feature-title">Reporte mensual automático</div>
+      <p class="feature-desc">A fin de mes recibes un PDF con leads, publicaciones, gastos y actividad. También puedes pedirlo cuando quieras con "reporte mensual".</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🗂️</span>
+      <div class="feature-title">Administrador de propiedades</div>
+      <p class="feature-desc">Todas tus propiedades en una tabla. Agrega, edita y marca como vendida desde tu panel. Nova las consulta cuando un prospecto pregunta.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="how-inner">
+    <div class="section-label">Proceso</div>
+    <h2>Activo en menos de 24 horas</h2>
+    <p class="section-sub">Sin instalaciones, sin configuraciones complicadas. Solo tu WhatsApp y tus cuentas de siempre.</p>
+
+    <div class="steps">
+      <div class="step fade-up">
+        <div class="step-number">1</div>
+        <div class="step-title">Contacta a Nova hoy</div>
+        <p class="step-desc">Escríbele a Nova por WhatsApp. En 20 minutos hacemos el alta: conectamos tu Instagram, Facebook, Gmail y Google Calendar.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-number">2</div>
+        <div class="step-title">Nova aprende tu voz</div>
+        <p class="step-desc">Cuéntale cómo te llamas, qué tipo de propiedades manejas y cómo hablas con tus clientes. Nova adopta tu personalidad.</p>
+      </div>
+      <div class="step fade-up">
+        <div class="step-number">3</div>
+        <div class="step-title">Listo, a trabajar</div>
+        <p class="step-desc">Tu nuevo número de WhatsApp contesta solos. Tú solo revisas aprobaciones desde tu panel. Nova hace el resto.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-label" style="text-align:center">Precio</div>
+  <h2 style="text-align:center">Sin letra pequeña</h2>
+
+  <div class="pricing-card fade-up">
+    <div class="pricing-header">
+      <div class="pricing-badge">Precio de lanzamiento</div>
+      <div class="pricing-price">
+        <span class="pricing-currency">$</span>950
+      </div>
+      <div class="pricing-period">MXN / mes · todo incluido</div>
+      <div class="pricing-comparison">
+        Una secretaria presencial cuesta <span>$12,000–$15,000/mes</span>.<br />Nova trabaja 24/7 por el precio de una comida de negocios.
+      </div>
+    </div>
+    <div class="pricing-features">
+      <div class="pricing-feature"><span class="check">✦</span> Número de WhatsApp dedicado para tu agencia</div>
+      <div class="pricing-feature"><span class="check">✦</span> IA que responde en tu nombre, 24 horas, 7 días</div>
+      <div class="pricing-feature"><span class="check">✦</span> Briefing matutino a las 8am</div>
+      <div class="pricing-feature"><span class="check">✦</span> Google Calendar — citas y recordatorios</div>
+      <div class="pricing-feature"><span class="check">✦</span> Gmail — lecturas y borradores</div>
+      <div class="pricing-feature"><span class="check">✦</span> Instagram + Facebook automáticos</div>
+      <div class="pricing-feature"><span class="check">✦</span> Redactor de fichas de propiedades</div>
+      <div class="pricing-feature"><span class="check">✦</span> Panel de administración de propiedades</div>
+      <div class="pricing-feature"><span class="check">✦</span> Control de gastos conversacional</div>
+      <div class="pricing-feature"><span class="check">✦</span> Reporte mensual en PDF</div>
+    </div>
+    <div class="pricing-cta">
+      <a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20me%20interesa%20contratar" target="_blank" class="btn-primary">
+        Contratar Nova ahora
+      </a>
+      <div class="pricing-note">Sin contrato. Cancela cuando quieras.</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIAL PLACEHOLDER -->
+<section class="testimonial-section">
+  <p class="testimonial-quote">
+    Antes perdía prospectos porque no contestaba a tiempo. Ahora Nova los atiende mientras yo estoy en una visita, y solo me llega la alerta cuando alguien está listo para comprar.
+  </p>
+  <div class="testimonial-author">
+    <strong>Carlos R.</strong>
+    Agente inmobiliario · Polanco, CDMX
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="section-label">Empieza hoy</div>
+    <h2>Tu secretaria te está esperando</h2>
+    <p>Escríbele a Nova por WhatsApp ahora mismo. En 20 minutos estás configurado y listo para nunca volver a perder un prospecto.</p>
+    <div class="cta-actions">
+      <a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20empezar" target="_blank" class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652C8.094 23.416 10.04 23.88 12.032 23.88c6.579 0 11.94-5.335 11.942-11.893.001-3.178-1.24-6.165-3.454-8.538z" fill="currentColor"/></svg>
+        Escribirle a Nova por WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-logo">Nova</div>
+    <div class="footer-sub">by Mesa Digital · CDMX</div>
+  </div>
+  <div class="footer-right">
+    <div>+52 777 991 6778</div>
+    <div style="margin-top:4px;">© 2026 Mesa Digital</div>
+  </div>
+</footer>
+
+<script>
+// ── WHATSAPP DEMO ANIMATION ──
+const conversation = [
+  { side: 'lead', text: 'Hola, vi tu anuncio de un depto en Polanco. ¿Sigue disponible?', delay: 800 },
+  { side: 'nova', text: '¡Hola! 👋 Soy Nova, la asistente de Carlos. El departamento en Polanco sigue disponible.\n\n¿Me puedes dar un poco más de contexto para ayudarte mejor?\n\n• ¿Para cuántas personas?\n• ¿Tienes un presupuesto aproximado?\n• ¿Buscas renta o compra?', delay: 2200 },
+  { side: 'lead', text: 'Compra. Somos 2 personas, presupuesto hasta $4 millones', delay: 1400 },
+  { side: 'nova', text: '¡Perfecto! El depto en Polanco está en $3.8M, 2 recámaras, 80m², piso 8 con vista.\n\n¿Te gustaría agendar una visita esta semana? 📅 Carlos tiene disponibilidad el jueves y viernes.', delay: 2000 },
+];
+
+let msgIndex = 0;
+const container = document.getElementById('demoMessages');
+
+function createMessage(msg) {
+  const div = document.createElement('div');
+  div.className = `msg ${msg.side}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.style.whiteSpace = 'pre-line';
+  bubble.textContent = msg.text;
+
+  const time = document.createElement('div');
+  time.className = 'msg-time';
+  const now = new Date();
+  time.textContent = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+
+  div.appendChild(bubble);
+  div.appendChild(time);
+  return div;
+}
+
+function showTyping() {
+  const indicator = document.createElement('div');
+  indicator.className = 'typing-indicator visible';
+  indicator.id = 'typingIndicator';
+  for (let i = 0; i < 3; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'typing-dot';
+    indicator.appendChild(dot);
+  }
+  container.appendChild(indicator);
+  container.scrollTop = container.scrollHeight;
+  return indicator;
+}
+
+function playNext() {
+  if (msgIndex >= conversation.length) {
+    // restart after pause
+    setTimeout(() => {
+      container.innerHTML = '';
+      msgIndex = 0;
+      setTimeout(playNext, 1200);
+    }, 5000);
+    return;
+  }
+
+  const msg = conversation[msgIndex];
+
+  if (msg.side === 'nova') {
+    const typing = showTyping();
+    setTimeout(() => {
+      typing.remove();
+      const el = createMessage(msg);
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(8px)';
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+      requestAnimationFrame(() => {
+        el.style.transition = 'opacity 0.3s, transform 0.3s';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      });
+      msgIndex++;
+      setTimeout(playNext, msg.delay + 400);
+    }, 1400);
+  } else {
+    const el = createMessage(msg);
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(8px)';
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+    requestAnimationFrame(() => {
+      el.style.transition = 'opacity 0.3s, transform 0.3s';
+      el.style.opacity = '1';
+      el.style.transform = 'translateY(0)';
+    });
+    msgIndex++;
+    setTimeout(playNext, msg.delay);
+  }
+}
+
+setTimeout(playNext, 1200);
+
+// ── SCROLL FADE-IN ──
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
