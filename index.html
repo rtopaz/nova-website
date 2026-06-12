@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -747,6 +747,23 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* ── LANG TOGGLE ── */
+    .lang-toggle {
+      display: flex; align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; flex-shrink: 0;
+    }
+    .lang-btn {
+      background: none; border: none; color: var(--muted);
+      font-size: 13px; font-weight: 600; padding: 6px 12px;
+      cursor: pointer; transition: background 0.2s, color 0.2s;
+      font-family: 'Inter', sans-serif; letter-spacing: 0.04em;
+    }
+    .lang-btn:hover { color: var(--text); }
+    .lang-btn.active { background: var(--gold); color: var(--black); }
+    [data-lang="en"] .es-text { display: none; }
+    [data-lang="es"] .en-text { display: none; }
   </style>
 </head>
 <body>
@@ -755,28 +772,32 @@
 <nav>
   <a href="#" class="nav-logo">Nova</a>
   <ul class="nav-links">
-    <li><a href="#features">Funciones</a></li>
-    <li><a href="#how">Cómo funciona</a></li>
-    <li><a href="#pricing">Precio</a></li>
-    <li><a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20saber%20más" target="_blank" class="nav-cta">Empieza hoy</a></li>
+    <li><a href="#features"><span class="es-text">Funciones</span><span class="en-text">Features</span></a></li>
+    <li><a href="#how"><span class="es-text">Cómo funciona</span><span class="en-text">How it works</span></a></li>
+    <li><a href="#pricing"><span class="es-text">Precio</span><span class="en-text">Pricing</span></a></li>
+    <li><a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20saber%20más" target="_blank" class="nav-cta es-text">Empieza hoy</a><a href="https://wa.me/527779916778?text=Hi%20Nova%2C%20I%27d%20like%20to%20know%20more" target="_blank" class="nav-cta en-text">Get started</a></li>
   </ul>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btnEs" onclick="setLang('es')">ES</button>
+    <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-text">
-    <div class="hero-eyebrow">Para agentes inmobiliarios en CDMX</div>
-    <h1>Tu secretaria <em>IA</em>,<br />disponible 24 horas</h1>
+    <div class="hero-eyebrow"><span class="es-text">Para agentes inmobiliarios en CDMX</span><span class="en-text">For real estate agents in Mexico City</span></div>
+    <h1><span class="es-text">Tu secretaria <em>IA</em>,<br />disponible 24 horas</span><span class="en-text">Your <em>AI</em> secretary,<br />available 24 hours</span></h1>
     <p class="hero-sub">
-      Nova contesta a tus clientes, <strong>califica prospectos</strong>, lleva tu agenda, publica en tus redes y redacta tus fichas de propiedades. Todo desde WhatsApp.
+      <span class="es-text">Nova contesta a tus clientes, <strong>califica prospectos</strong>, lleva tu agenda, publica en tus redes y redacta tus fichas de propiedades. Todo desde WhatsApp.</span><span class="en-text">Nova answers your clients, <strong>qualifies leads</strong>, manages your calendar, posts to social media, and writes your property listings. All through WhatsApp.</span>
     </p>
     <div class="hero-actions">
       <a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20una%20demostración" target="_blank" class="btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652C8.094 23.416 10.04 23.88 12.032 23.88c6.579 0 11.94-5.335 11.942-11.893.001-3.178-1.24-6.165-3.454-8.538z" fill="currentColor"/></svg>
-        Ver demo en vivo
+        <span class="es-text">Ver demo en vivo</span><span class="en-text">See live demo</span>
       </a>
       <a href="#features" class="btn-secondary">
-        Ver funciones
+        <span class="es-text">Ver funciones</span><span class="en-text">See features</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
       </a>
     </div>
@@ -788,8 +809,8 @@
         <div class="proof-avatar">LS</div>
       </div>
       <div class="proof-text">
-        <strong>Únete a los primeros agentes</strong>
-        en tener una secretaria que nunca descansa
+        <strong><span class="es-text">Únete a los primeros agentes</span><span class="en-text">Join the first agents</span></strong>
+        <span class="es-text">en tener una secretaria que nunca descansa</span><span class="en-text">with a secretary that never sleeps</span>
       </div>
     </div>
   </div>
@@ -813,55 +834,55 @@
 
 <!-- FEATURES -->
 <section class="section" id="features">
-  <div class="section-label">Todo lo que Nova hace por ti</div>
-  <h2>Una secretaria completa,<br />sin costo de nómina</h2>
-  <p class="section-sub">Una secretaria en CDMX cuesta $12,000–$15,000 al mes. Nova cuesta $950 y trabaja 24 horas, 7 días a la semana.</p>
+  <div class="section-label"><span class="es-text">Todo lo que Nova hace por ti</span><span class="en-text">Everything Nova does for you</span></div>
+  <h2><span class="es-text">Una secretaria completa,<br />sin costo de nómina</span><span class="en-text">A full-time secretary,<br />without the payroll</span></h2>
+  <p class="section-sub"><span class="es-text">Una secretaria en CDMX cuesta $12,000–$15,000 al mes. Nova cuesta $950 y trabaja 24 horas, 7 días a la semana.</span><span class="en-text">A secretary in Mexico City costs $12,000–$15,000/month. Nova costs $950 and works 24 hours, 7 days a week.</span></p>
 
   <div class="features-grid">
     <div class="feature-card fade-up">
       <span class="feature-icon">💬</span>
-      <div class="feature-title">Responde a tus prospectos 24/7</div>
-      <p class="feature-desc">Nova contesta en segundos, califica al prospecto (presupuesto, colonias, cuartos, plazo) y te avisa cuando hay alguien listo para comprar.</p>
+      <div class="feature-title"><span class="es-text">Responde a tus prospectos 24/7</span><span class="en-text">Responds to your leads 24/7</span></div>
+      <p class="feature-desc"><span class="es-text">Nova contesta en segundos, califica al prospecto (presupuesto, colonias, cuartos, plazo) y te avisa cuando hay alguien listo para comprar.</span><span class="en-text">Nova replies in seconds, qualifies the lead (budget, zones, rooms, timeline) and alerts you when someone is ready to buy.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">📅</span>
-      <div class="feature-title">Agenda y recordatorios</div>
-      <p class="feature-desc">Guarda citas en Google Calendar con un mensaje de voz. Nova te recuerda 30 minutos antes para que nunca faltes a una visita.</p>
+      <div class="feature-title"><span class="es-text">Agenda y recordatorios</span><span class="en-text">Calendar &amp; reminders</span></div>
+      <p class="feature-desc"><span class="es-text">Guarda citas en Google Calendar con un mensaje de voz. Nova te recuerda 30 minutos antes para que nunca faltes a una visita.</span><span class="en-text">Save appointments to Google Calendar with a voice message. Nova reminds you 30 minutes before so you never miss a showing.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">📧</span>
-      <div class="feature-title">Gmail sin abrir el correo</div>
-      <p class="feature-desc">Nova lee tus correos importantes, redacta la respuesta y tú la apruebas con un toque desde tu dashboard. Nunca te enfrentes a una bandeja de entrada llena.</p>
+      <div class="feature-title"><span class="es-text">Gmail sin abrir el correo</span><span class="en-text">Gmail without opening email</span></div>
+      <p class="feature-desc"><span class="es-text">Nova lee tus correos importantes, redacta la respuesta y tú la apruebas con un toque desde tu dashboard. Nunca te enfrentes a una bandeja de entrada llena.</span><span class="en-text">Nova reads your important emails, drafts the reply, and you approve with one tap from your dashboard. Never face a full inbox again.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">🏡</span>
-      <div class="feature-title">Fichas de propiedades en segundos</div>
-      <p class="feature-desc">Dile a Nova los detalles de la propiedad y te redacta una ficha profesional lista para publicar. También extrae datos de PDFs automáticamente.</p>
+      <div class="feature-title"><span class="es-text">Fichas de propiedades en segundos</span><span class="en-text">Property listings in seconds</span></div>
+      <p class="feature-desc"><span class="es-text">Dile a Nova los detalles de la propiedad y te redacta una ficha profesional lista para publicar. También extrae datos de PDFs automáticamente.</span><span class="en-text">Tell Nova the property details and she writes a professional listing ready to publish. She also extracts data from PDFs automatically.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">📱</span>
-      <div class="feature-title">Instagram y Facebook automáticos</div>
-      <p class="feature-desc">Manda una foto con el pie de foto y Nova la convierte en una publicación. Tú apruebas en el panel, Nova publica. También responde comentarios y DMs.</p>
+      <div class="feature-title"><span class="es-text">Instagram y Facebook automáticos</span><span class="en-text">Automated Instagram &amp; Facebook</span></div>
+      <p class="feature-desc"><span class="es-text">Manda una foto con el pie de foto y Nova la convierte en una publicación. Tú apruebas en el panel, Nova publica. También responde comentarios y DMs.</span><span class="en-text">Send a photo with a caption and Nova turns it into a post. You approve in the panel, Nova publishes. She also replies to comments and DMs.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">💰</span>
-      <div class="feature-title">Control de gastos conversacional</div>
-      <p class="feature-desc">Le dices a Nova cuánto gastaste y en qué. Al final del mes, tienes un resumen completo por WhatsApp y en tu panel.</p>
+      <div class="feature-title"><span class="es-text">Control de gastos conversacional</span><span class="en-text">Conversational expense tracking</span></div>
+      <p class="feature-desc"><span class="es-text">Le dices a Nova cuánto gastaste y en qué. Al final del mes, tienes un resumen completo por WhatsApp y en tu panel.</span><span class="en-text">Tell Nova what you spent and on what. At month's end you get a full breakdown on WhatsApp and in your panel.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">🌅</span>
-      <div class="feature-title">Briefing matutino a las 8am</div>
-      <p class="feature-desc">Cada mañana Nova te manda un resumen: tus citas del día, prospectos nuevos que llegaron de noche, correos pendientes.</p>
+      <div class="feature-title"><span class="es-text">Briefing matutino a las 8am</span><span class="en-text">Morning briefing at 8am</span></div>
+      <p class="feature-desc"><span class="es-text">Cada mañana Nova te manda un resumen: tus citas del día, prospectos nuevos que llegaron de noche, correos pendientes.</span><span class="en-text">Every morning Nova sends you a summary: today's appointments, new leads that came in overnight, pending emails.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">📊</span>
-      <div class="feature-title">Reporte mensual automático</div>
-      <p class="feature-desc">A fin de mes recibes un PDF con leads, publicaciones, gastos y actividad. También puedes pedirlo cuando quieras con "reporte mensual".</p>
+      <div class="feature-title"><span class="es-text">Reporte mensual automático</span><span class="en-text">Automatic monthly report</span></div>
+      <p class="feature-desc"><span class="es-text">A fin de mes recibes un PDF con leads, publicaciones, gastos y actividad. También puedes pedirlo cuando quieras con "reporte mensual".</span><span class="en-text">At month's end you receive a PDF with leads, posts, expenses, and activity. You can also request it anytime.</span></p>
     </div>
     <div class="feature-card fade-up">
       <span class="feature-icon">🗂️</span>
-      <div class="feature-title">Administrador de propiedades</div>
-      <p class="feature-desc">Todas tus propiedades en una tabla. Agrega, edita y marca como vendida desde tu panel. Nova las consulta cuando un prospecto pregunta.</p>
+      <div class="feature-title"><span class="es-text">Administrador de propiedades</span><span class="en-text">Property manager</span></div>
+      <p class="feature-desc"><span class="es-text">Todas tus propiedades en una tabla. Agrega, edita y marca como vendida desde tu panel. Nova las consulta cuando un prospecto pregunta.</span><span class="en-text">All your properties in one table. Add, edit, and mark as sold from your panel. Nova checks them when a lead asks.</span></p>
     </div>
   </div>
 </section>
@@ -869,25 +890,25 @@
 <!-- HOW IT WORKS -->
 <section class="how-section" id="how">
   <div class="how-inner">
-    <div class="section-label">Proceso</div>
-    <h2>Activo en menos de 24 horas</h2>
-    <p class="section-sub">Sin instalaciones, sin configuraciones complicadas. Solo tu WhatsApp y tus cuentas de siempre.</p>
+    <div class="section-label"><span class="es-text">Proceso</span><span class="en-text">Process</span></div>
+    <h2><span class="es-text">Activo en menos de 24 horas</span><span class="en-text">Up and running in under 24 hours</span></h2>
+    <p class="section-sub"><span class="es-text">Sin instalaciones, sin configuraciones complicadas. Solo tu WhatsApp y tus cuentas de siempre.</span><span class="en-text">No installs, no complicated setup. Just your WhatsApp and the accounts you already use.</span></p>
 
     <div class="steps">
       <div class="step fade-up">
         <div class="step-number">1</div>
-        <div class="step-title">Contacta a Nova hoy</div>
-        <p class="step-desc">Escríbele a Nova por WhatsApp. En 20 minutos hacemos el alta: conectamos tu Instagram, Facebook, Gmail y Google Calendar.</p>
+        <div class="step-title"><span class="es-text">Contacta a Nova hoy</span><span class="en-text">Contact Nova today</span></div>
+        <p class="step-desc"><span class="es-text">Escríbele a Nova por WhatsApp. En 20 minutos hacemos el alta: conectamos tu Instagram, Facebook, Gmail y Google Calendar.</span><span class="en-text">Message Nova on WhatsApp. In 20 minutes we set everything up: Instagram, Facebook, Gmail and Google Calendar connected.</span></p>
       </div>
       <div class="step fade-up">
         <div class="step-number">2</div>
-        <div class="step-title">Nova aprende tu voz</div>
-        <p class="step-desc">Cuéntale cómo te llamas, qué tipo de propiedades manejas y cómo hablas con tus clientes. Nova adopta tu personalidad.</p>
+        <div class="step-title"><span class="es-text">Nova aprende tu voz</span><span class="en-text">Nova learns your voice</span></div>
+        <p class="step-desc"><span class="es-text">Cuéntale cómo te llamas, qué tipo de propiedades manejas y cómo hablas con tus clientes. Nova adopta tu personalidad.</span><span class="en-text">Tell her your name, what properties you handle, and how you talk to clients. Nova adopts your personality.</span></p>
       </div>
       <div class="step fade-up">
         <div class="step-number">3</div>
-        <div class="step-title">Listo, a trabajar</div>
-        <p class="step-desc">Tu nuevo número de WhatsApp contesta solos. Tú solo revisas aprobaciones desde tu panel. Nova hace el resto.</p>
+        <div class="step-title"><span class="es-text">Listo, a trabajar</span><span class="en-text">Done — time to work</span></div>
+        <p class="step-desc"><span class="es-text">Tu nuevo número de WhatsApp contesta solos. Tú solo revisas aprobaciones desde tu panel. Nova hace el resto.</span><span class="en-text">Your new WhatsApp number answers on its own. You just review approvals from your panel. Nova does the rest.</span></p>
       </div>
     </div>
   </div>
@@ -895,37 +916,37 @@
 
 <!-- PRICING -->
 <section class="section" id="pricing">
-  <div class="section-label" style="text-align:center">Precio</div>
-  <h2 style="text-align:center">Sin letra pequeña</h2>
+  <div class="section-label" style="text-align:center"><span class="es-text">Precio</span><span class="en-text">Pricing</span></div>
+  <h2 style="text-align:center"><span class="es-text">Sin letra pequeña</span><span class="en-text">No fine print</span></h2>
 
   <div class="pricing-card fade-up">
     <div class="pricing-header">
-      <div class="pricing-badge">Precio de lanzamiento</div>
+      <div class="pricing-badge"><span class="es-text">Precio de lanzamiento</span><span class="en-text">Launch price</span></div>
       <div class="pricing-price">
         <span class="pricing-currency">$</span>950
       </div>
-      <div class="pricing-period">MXN / mes · todo incluido</div>
+      <div class="pricing-period"><span class="es-text">MXN / mes · todo incluido</span><span class="en-text">MXN / month · everything included</span></div>
       <div class="pricing-comparison">
-        Una secretaria presencial cuesta <span>$12,000–$15,000/mes</span>.<br />Nova trabaja 24/7 por el precio de una comida de negocios.
+        <span class="es-text">Una secretaria presencial cuesta <span>$12,000–$15,000/mes</span>.<br />Nova trabaja 24/7 por el precio de una comida de negocios.</span><span class="en-text">A full-time secretary costs <span>$12,000–$15,000/month</span>.<br />Nova works 24/7 for the price of a business lunch.</span>
       </div>
     </div>
     <div class="pricing-features">
-      <div class="pricing-feature"><span class="check">✦</span> Número de WhatsApp dedicado para tu agencia</div>
-      <div class="pricing-feature"><span class="check">✦</span> IA que responde en tu nombre, 24 horas, 7 días</div>
-      <div class="pricing-feature"><span class="check">✦</span> Briefing matutino a las 8am</div>
-      <div class="pricing-feature"><span class="check">✦</span> Google Calendar — citas y recordatorios</div>
-      <div class="pricing-feature"><span class="check">✦</span> Gmail — lecturas y borradores</div>
-      <div class="pricing-feature"><span class="check">✦</span> Instagram + Facebook automáticos</div>
-      <div class="pricing-feature"><span class="check">✦</span> Redactor de fichas de propiedades</div>
-      <div class="pricing-feature"><span class="check">✦</span> Panel de administración de propiedades</div>
-      <div class="pricing-feature"><span class="check">✦</span> Control de gastos conversacional</div>
-      <div class="pricing-feature"><span class="check">✦</span> Reporte mensual en PDF</div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Número de WhatsApp dedicado para tu agencia</span><span class="en-text">Dedicated WhatsApp number for your agency</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">IA que responde en tu nombre, 24 horas, 7 días</span><span class="en-text">AI that replies on your behalf, 24 hours, 7 days</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Briefing matutino a las 8am</span><span class="en-text">Morning briefing at 8am</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Google Calendar — citas y recordatorios</span><span class="en-text">Google Calendar — appointments &amp; reminders</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Gmail — lecturas y borradores</span><span class="en-text">Gmail — reading &amp; drafts</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Instagram + Facebook automáticos</span><span class="en-text">Automated Instagram + Facebook</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Redactor de fichas de propiedades</span><span class="en-text">Property listing writer</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Panel de administración de propiedades</span><span class="en-text">Property management panel</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Control de gastos conversacional</span><span class="en-text">Conversational expense tracking</span></div>
+      <div class="pricing-feature"><span class="check">✦</span> <span class="es-text">Reporte mensual en PDF</span><span class="en-text">Monthly PDF report</span></div>
     </div>
     <div class="pricing-cta">
       <a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20me%20interesa%20contratar" target="_blank" class="btn-primary">
-        Contratar Nova ahora
+        <span class="es-text">Contratar Nova ahora</span><span class="en-text">Subscribe to Nova now</span>
       </a>
-      <div class="pricing-note">Sin contrato. Cancela cuando quieras.</div>
+      <div class="pricing-note"><span class="es-text">Sin contrato. Cancela cuando quieras.</span><span class="en-text">No contract. Cancel anytime.</span></div>
     </div>
   </div>
 </section>
@@ -933,24 +954,24 @@
 <!-- TESTIMONIAL PLACEHOLDER -->
 <section class="testimonial-section">
   <p class="testimonial-quote">
-    Antes perdía prospectos porque no contestaba a tiempo. Ahora Nova los atiende mientras yo estoy en una visita, y solo me llega la alerta cuando alguien está listo para comprar.
+    <span class="es-text">Antes perdía prospectos porque no contestaba a tiempo. Ahora Nova los atiende mientras yo estoy en una visita, y solo me llega la alerta cuando alguien está listo para comprar.</span><span class="en-text">I used to lose leads because I couldn't reply fast enough. Now Nova handles them while I'm at a showing, and I only get an alert when someone is ready to buy.</span>
   </p>
   <div class="testimonial-author">
     <strong>Carlos R.</strong>
-    Agente inmobiliario · Polanco, CDMX
+    <span class="es-text">Agente inmobiliario · Polanco, CDMX</span><span class="en-text">Real estate agent · Polanco, Mexico City</span>
   </div>
 </section>
 
 <!-- FINAL CTA -->
 <section class="cta-section">
   <div class="cta-inner">
-    <div class="section-label">Empieza hoy</div>
-    <h2>Tu secretaria te está esperando</h2>
-    <p>Escríbele a Nova por WhatsApp ahora mismo. En 20 minutos estás configurado y listo para nunca volver a perder un prospecto.</p>
+    <div class="section-label"><span class="es-text">Empieza hoy</span><span class="en-text">Start today</span></div>
+    <h2><span class="es-text">Tu secretaria te está esperando</span><span class="en-text">Your secretary is waiting</span></h2>
+    <p><span class="es-text">Escríbele a Nova por WhatsApp ahora mismo. En 20 minutos estás configurado y listo para nunca volver a perder un prospecto.</span><span class="en-text">Message Nova on WhatsApp right now. In 20 minutes you're set up and ready to never lose another lead.</span></p>
     <div class="cta-actions">
       <a href="https://wa.me/527779916778?text=Hola%20Nova%2C%20quiero%20empezar" target="_blank" class="btn-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652C8.094 23.416 10.04 23.88 12.032 23.88c6.579 0 11.94-5.335 11.942-11.893.001-3.178-1.24-6.165-3.454-8.538z" fill="currentColor"/></svg>
-        Escribirle a Nova por WhatsApp
+        <span class="es-text">Escribirle a Nova por WhatsApp</span><span class="en-text">Message Nova on WhatsApp</span>
       </a>
     </div>
   </div>
@@ -1071,6 +1092,16 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 
 document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// ── LANGUAGE TOGGLE ──
+function setLang(lang) {
+  document.documentElement.setAttribute('data-lang', lang);
+  document.getElementById('btnEs').classList.toggle('active', lang === 'es');
+  document.getElementById('btnEn').classList.toggle('active', lang === 'en');
+  localStorage.setItem('nova-lang', lang);
+}
+const savedLang = localStorage.getItem('nova-lang');
+if (savedLang) setLang(savedLang);
 </script>
 </body>
 </html>
