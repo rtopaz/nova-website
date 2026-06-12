@@ -179,6 +179,16 @@
 
     .btn-nuevo:hover { background: #d9b97e; }
 
+    .ghost-toggle {
+      display: flex; align-items: center; gap: 8px;
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); font-size: 13px; font-weight: 500;
+      padding: 8px 16px; border-radius: 8px; cursor: pointer;
+      font-family: 'Inter', sans-serif; transition: all 0.2s;
+    }
+    .ghost-toggle:hover { border-color: var(--gold); color: var(--text); }
+    .ghost-toggle.active { background: rgba(201,169,110,0.15); border-color: var(--gold); color: var(--gold); }
+
     /* ── MAIN ── */
     main { padding: 36px 40px; max-width: 1400px; margin: 0 auto; }
 
@@ -569,6 +579,7 @@
 
     <div class="header-right">
       <span class="op-name">Mesa Digital · Ruben</span>
+      <button class="ghost-toggle" id="ghostBtn" onclick="toggleGhostMode()">👻 Ghost: OFF</button>
       <button class="btn-nuevo" onclick="openModal()">＋ Nuevo cliente</button>
     </div>
   </header>
@@ -1014,6 +1025,44 @@ function eliminarPendiente(id) {
     setTimeout(() => row.remove(), 300);
   }
 }
+
+// ── NOVA GHOST MODE ──
+let ghostModeActive = false;
+const API = 'https://mesa-digital-api.onrender.com';
+
+async function loadGhostMode() {
+  try {
+    const res = await fetch(`${API}/api/nova-ghost-mode/status`);
+    const data = await res.json();
+    ghostModeActive = data.ghost;
+    updateGhostBtn();
+  } catch {}
+}
+
+function updateGhostBtn() {
+  const btn = document.getElementById('ghostBtn');
+  if (!btn) return;
+  btn.textContent = ghostModeActive ? '👻 Ghost: ON' : '👻 Ghost: OFF';
+  btn.classList.toggle('active', ghostModeActive);
+}
+
+async function toggleGhostMode() {
+  const endpoint = ghostModeActive ? 'off' : 'on';
+  try {
+    const res = await fetch(`${API}/api/nova-ghost-mode/${endpoint}`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      ghostModeActive = !ghostModeActive;
+      updateGhostBtn();
+      showToast(ghostModeActive ? '👻 Ghost mode ON — tu número no es reconocido como owner' : '✅ Ghost mode OFF — eres owner de nuevo');
+    }
+  } catch (e) {
+    showToast('Error al cambiar ghost mode');
+  }
+}
+
+// Load ghost mode status on dashboard load
+loadGhostMode();
 </script>
 </body>
 </html>
