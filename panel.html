@@ -2,8 +2,22 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Nova — Mi panel</title>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- iOS PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Nova" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+
+  <!-- Android / Chrome theme -->
+  <meta name="theme-color" content="#0F1117" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -38,6 +52,9 @@
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       min-height: 100vh;
+      /* Push content below the iOS status bar in standalone mode */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* ── AUTH WALL ── */
@@ -1151,12 +1168,24 @@
 
 <script>
 // ── CONFIG ──
-// URL params: panel.html?client=CLIENT_SLUG&token=TOKEN
+// URL params: panel.html?client=CLIENT_SLUG&token=TOKEN&name=NAME
+// Params are persisted to localStorage so the PWA preserves them when launched
+// from the Android home screen (which uses start_url from manifest, not the saved URL).
 const API_BASE = 'https://mesa-digital-ke7b.onrender.com';
 
 const params = new URLSearchParams(window.location.search);
-const CLIENT_SLUG = params.get('client') || '';
-const ACCESS_TOKEN = params.get('token') || '';
+
+// Persist to localStorage whenever full params are present
+if (params.get('client') && params.get('token')) {
+  localStorage.setItem('nova_client', params.get('client'));
+  localStorage.setItem('nova_token', params.get('token'));
+  if (params.get('name')) localStorage.setItem('nova_name', params.get('name'));
+}
+
+// Read from URL first, fall back to localStorage (PWA re-launch without params)
+const CLIENT_SLUG  = params.get('client') || localStorage.getItem('nova_client') || '';
+const ACCESS_TOKEN = params.get('token')  || localStorage.getItem('nova_token')  || '';
+const SAVED_NAME   = params.get('name')   || localStorage.getItem('nova_name')   || '';
 
 // ── AUTH ──
 // Simple token check matching the URL param
@@ -1675,9 +1704,9 @@ async function loadRealData() {
   }
 }
 
-// Agent name from URL param
-if (params.get('name')) {
-  const name = decodeURIComponent(params.get('name'));
+// Agent name (from URL param or localStorage)
+if (SAVED_NAME) {
+  const name = decodeURIComponent(SAVED_NAME);
   document.getElementById('agentName').textContent = name;
   document.getElementById('agentInitials').textContent = name.charAt(0).toUpperCase();
   setGreeting(name.split(' ')[0]);
@@ -1686,6 +1715,14 @@ if (params.get('name')) {
 // Month label
 const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 document.getElementById('expenseMonthLabel').textContent = `${months[new Date().getMonth()]} ${new Date().getFullYear()}`;
+
+// ── SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .catch(err => console.warn('[SW] registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>
