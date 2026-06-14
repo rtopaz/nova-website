@@ -1037,6 +1037,10 @@
             <span class="qa-icon">🔗</span>
             <div class="qa-label">Links y ayuda</div>
           </button>
+          <button class="qa-btn" onclick="confirmReset()">
+            <span class="qa-icon">🔄</span>
+            <div class="qa-label">Reiniciar configuración</div>
+          </button>
         </div>
 
         <!-- Stats -->
@@ -1723,6 +1727,12 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.warn('[SW] registration failed:', err));
   });
 }
+
+  function confirmReset() {
+    if (confirm('¿Seguro que quieres reiniciar tu configuración? Tendrás que volver a responder las preguntas de onboarding.')) {
+      window.open('https://wa.me/527779916778?text=modo%20presentaci%C3%B3n', '_blank');
+    }
+  }
 </script>
 </body>
 </html>
