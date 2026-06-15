@@ -822,6 +822,7 @@ function renderClientCard(c) {
   const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   const panelUrl = c.panelUrl || `panel.html?client=${c.slug}&token=${c.token}&name=${encodeURIComponent(c.name)}`;
   const waUrl = `https://wa.me/${(c.phone || '').replace(/\D/g, '')}`;
+  const isDemo = c.id === 'nova_demo_agent' || c.slug === 'nova-demo';
 
   return `
     <div class="client-card" id="card-${c.id}">
@@ -851,7 +852,7 @@ function renderClientCard(c) {
         <a class="cc-btn cc-btn-primary" href="${panelUrl}" target="_blank">Ver panel</a>
         <a class="cc-btn" href="${waUrl}" target="_blank">💬 WhatsApp</a>
         <button class="cc-btn" onclick="reenviarLink('${c.name}', '${c.phone}', '${panelUrl}')">Reenviar link</button>
-        <button class="cc-btn" onclick="archivarCliente('${c.id}')">Archivar</button>
+        ${isDemo ? `<button class="cc-btn" style="color:var(--orange);border-color:var(--orange);" onclick="resetDemoClient('${c.slug}')">🔄 Reiniciar demo</button>` : `<button class="cc-btn" onclick="archivarCliente('${c.id}')">Archivar</button>`}
       </div>
     </div>
   `;
@@ -1023,6 +1024,24 @@ function eliminarPendiente(id) {
     row.style.opacity = '0';
     row.style.transition = 'opacity 0.3s';
     setTimeout(() => row.remove(), 300);
+  }
+}
+
+// ── DEMO RESET ──
+async function resetDemoClient(slug) {
+  if (!confirm('¿Reiniciar demo? Esto borrará el historial de onboarding y conversaciones del agente demo para que puedas empezar de cero.')) return;
+  try {
+    const res = await fetch(`${API_BASE}/admin/nova-reset-demo?slug=${encodeURIComponent(slug)}&password=${OP_PASSWORD}`, {
+      method: 'POST',
+    });
+    if (res.ok) {
+      showToast('Demo reiniciado. Envía un mensaje a Nova para comenzar el onboarding de nuevo.', 'success');
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Error al reiniciar el demo.', 'error');
+    }
+  } catch (e) {
+    showToast('No se pudo conectar con la API para reiniciar el demo.', 'error');
   }
 }
 
