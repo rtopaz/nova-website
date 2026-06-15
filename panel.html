@@ -906,9 +906,19 @@
     }
     .lang-toggle:hover { border-color: var(--gold); color: var(--gold); }
 
+    /* ── COLLAPSIBLE SECTIONS ── */
+    .section-toggle {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 16px; line-height: 1; padding: 4px 6px; border-radius: 6px;
+      transition: transform 0.25s, color 0.15s; flex-shrink: 0;
+    }
+    .section-toggle:hover { color: var(--gold); background: var(--gold-bg); }
+    .section-toggle.collapsed { transform: rotate(-90deg); }
+    .hidden-section { display: none !important; }
+
     /* ── MOBILE ── */
     @media (max-width: 860px) {
-      .layout { grid-template-columns: 1fr; }
+      .layout { grid-template-columns: 1fr; align-content: start; }
 
       .sidebar {
         position: static;
@@ -938,7 +948,7 @@
         text-align: center;
       }
 
-      main { padding: 20px 16px; }
+      main { padding: 20px 16px; overflow-y: visible; }
 
       .quick-actions { grid-template-columns: repeat(3, 1fr); }
       .stats-bar { grid-template-columns: 1fr 1fr; }
@@ -1059,7 +1069,11 @@
         </div>
 
         <!-- Stats -->
-        <div class="stats-bar">
+        <div class="section-header" style="margin-bottom:16px;">
+          <div class="section-title" data-i18n="stat_section_title">Resumen del mes</div>
+          <button class="section-toggle" id="toggle-statsBar" onclick="toggleSection('statsBar', this)">▾</button>
+        </div>
+        <div id="statsBar" class="stats-bar">
           <div class="stat-card">
             <div class="stat-label" data-i18n="stat_leads_label">Prospectos este mes</div>
             <div class="stat-value stat-gold" id="statLeads">—</div>
@@ -1085,7 +1099,10 @@
         <!-- Calendar today -->
         <div class="section-header" style="margin-bottom:12px;">
           <div class="section-title" data-i18n="calendar_title">📅 Citas de hoy</div>
-          <div class="section-count" id="calendarCount"></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="section-count" id="calendarCount"></div>
+            <button class="section-toggle" id="toggle-calendarSection" onclick="toggleSection('calendarSection', this)">▾</button>
+          </div>
         </div>
         <div id="calendarSection" style="margin-bottom:40px;">
           <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;">
@@ -1096,7 +1113,10 @@
         <!-- Pending items preview -->
         <div class="section-header">
           <div class="section-title" data-i18n="pending_approval">Pendientes de aprobación</div>
-          <div class="section-count" id="pendingCount"></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="section-count" id="pendingCount"></div>
+            <button class="section-toggle" id="toggle-homePendingList" onclick="toggleSection('homePendingList', this)">▾</button>
+          </div>
         </div>
         <div id="homePendingList" class="cards-list"></div>
       </div>
@@ -1192,6 +1212,7 @@ const T = {
     nav_posts:'Publicaciones', nav_emails:'Correos', nav_leads:'Prospectos',
     label_management:'Gestión', nav_listings:'Propiedades', nav_expenses:'Gastos',
     agent_role:'Agente Nova',
+    stat_section_title:'Resumen del mes',
     qa_expenses:'Gastos este mes', qa_listings:'Mis propiedades',
     qa_write_listing:'Escribir ficha', qa_report:'Reporte mensual',
     qa_help:'Links y ayuda', qa_reset:'Reiniciar config.',
@@ -1229,6 +1250,7 @@ const T = {
     nav_posts:'Posts', nav_emails:'Emails', nav_leads:'Leads',
     label_management:'Management', nav_listings:'Listings', nav_expenses:'Expenses',
     agent_role:'Nova Agent',
+    stat_section_title:'Monthly summary',
     qa_expenses:"This month's expenses", qa_listings:'My listings',
     qa_write_listing:'Write listing', qa_report:'Monthly report',
     qa_help:'Links & help', qa_reset:'Reset config.',
@@ -1277,7 +1299,29 @@ function t(key) { return T[currentLang]?.[key] ?? T.es[key] ?? key; }
 
 function openWA(msgKey) {
   const msg = WA_MSGS[msgKey]?.[currentLang] ?? WA_MSGS[msgKey]?.es ?? msgKey;
-  window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+  // window.open is blocked in iOS PWA standalone mode; programmatic anchor click works
+  const a = Object.assign(document.createElement('a'), { href: url, target: '_blank', rel: 'noopener noreferrer' });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function toggleSection(id, btn) {
+  const el = document.getElementById(id);
+  const collapsing = !el.classList.contains('hidden-section');
+  el.classList.toggle('hidden-section', collapsing);
+  btn.classList.toggle('collapsed', collapsing);
+  localStorage.setItem('nova_sec_' + id, collapsing ? '0' : '1');
+}
+
+function restoreSections() {
+  ['statsBar', 'calendarSection', 'homePendingList'].forEach(id => {
+    if (localStorage.getItem('nova_sec_' + id) === '0') {
+      document.getElementById(id)?.classList.add('hidden-section');
+      document.getElementById('toggle-' + id)?.classList.add('collapsed');
+    }
+  });
 }
 
 function applyLang() {
@@ -1725,6 +1769,7 @@ function rerenderCards() {
 // ── INIT ──
 async function init() {
   applyLang();
+  restoreSections();
   const name = SAVED_NAME ? decodeURIComponent(SAVED_NAME).split(' ')[0] : null;
   setGreeting(name);
 
