@@ -121,6 +121,65 @@
       display: none;
     }
 
+    /* ── PIN GATE ── */
+    #pinGate {
+      position: fixed; inset: 0; z-index: 1001;
+      background: var(--black);
+      display: none;
+      align-items: center; justify-content: center;
+    }
+
+    .pin-dots {
+      display: flex; gap: 20px; justify-content: center;
+      margin-bottom: 32px;
+    }
+
+    .pin-dot {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: transparent;
+      transition: background 0.12s, border-color 0.12s;
+    }
+
+    .pin-dot.filled { background: var(--gold); border-color: var(--gold); }
+
+    .pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .pin-key {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 8px;
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'Playfair Display', serif;
+      color: var(--text);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.1s, border-color 0.1s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .pin-key:hover:not(:disabled) { background: var(--border); border-color: var(--gold); }
+    .pin-key:active:not(:disabled) { background: var(--gold-bg); }
+    .pin-key.action { color: var(--gold); font-family: 'Inter', sans-serif; font-size: 18px; }
+    .pin-key:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .pin-error {
+      font-size: 13px;
+      color: var(--red);
+      text-align: center;
+      min-height: 18px;
+      margin-top: 4px;
+    }
+
     /* ── LAYOUT ── */
     #app { display: none; }
 
@@ -975,6 +1034,35 @@
   </div>
 </div>
 
+<!-- PIN GATE -->
+<div id="pinGate">
+  <div class="auth-box">
+    <div class="auth-logo">Nova</div>
+    <div class="auth-sub">Ingresa tu PIN de 4 dígitos</div>
+    <div class="pin-dots" id="pinDots">
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+      <div class="pin-dot"></div>
+    </div>
+    <div class="pin-keypad" id="pinKeypad">
+      <button class="pin-key" onclick="pinKey('1')">1</button>
+      <button class="pin-key" onclick="pinKey('2')">2</button>
+      <button class="pin-key" onclick="pinKey('3')">3</button>
+      <button class="pin-key" onclick="pinKey('4')">4</button>
+      <button class="pin-key" onclick="pinKey('5')">5</button>
+      <button class="pin-key" onclick="pinKey('6')">6</button>
+      <button class="pin-key" onclick="pinKey('7')">7</button>
+      <button class="pin-key" onclick="pinKey('8')">8</button>
+      <button class="pin-key" onclick="pinKey('9')">9</button>
+      <button class="pin-key action" onclick="pinBackspace()">⌫</button>
+      <button class="pin-key" onclick="pinKey('0')">0</button>
+      <div></div>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <div class="layout">
@@ -1373,8 +1461,7 @@ document.getElementById('authBtn').onclick = function() {
   const input = document.getElementById('tokenInput').value.trim();
   if (input === ACCESS_TOKEN && ACCESS_TOKEN !== '') {
     document.getElementById('authWall').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    init();
+    checkPinGate(); // async — shows PIN gate or calls proceedToApp()
   } else {
     document.getElementById('authError').style.display = 'block';
   }
@@ -1386,10 +1473,128 @@ document.getElementById('tokenInput').addEventListener('keypress', function(e) {
 
 // Auto-login if token is in URL (direct dashboard links)
 if (ACCESS_TOKEN) {
-  // Panel accessible directly via URL with token
   document.getElementById('authWall').style.display = 'none';
+  window.addEventListener('DOMContentLoaded', function() { checkPinGate(); });
+}
+
+// ── PIN GATE ──
+let _pinBuffer = '';
+let _pinAttemptCount = 0;
+let _pinLockUntil = 0;
+let _pinLockTimer = null;
+
+async function checkPinGate() {
+  if (!CLIENT_SLUG) { proceedToApp(); return; }
+  const stored = localStorage.getItem('nova_pin_' + CLIENT_SLUG);
+  if (stored && parseInt(stored, 10) > Date.now()) { proceedToApp(); return; }
+  if (stored) localStorage.removeItem('nova_pin_' + CLIENT_SLUG); // expired — clear it
+  try {
+    const res = await fetch(API_BASE + '/api/panel/pin-required?slug=' + encodeURIComponent(CLIENT_SLUG));
+    if (!res.ok) throw new Error('status ' + res.status);
+    const data = await res.json();
+    if (data.pin_required) { showPinGate(); } else { proceedToApp(); }
+  } catch (e) {
+    // Fail closed — show the PIN gate with an error and a retry option
+    showPinGate();
+    document.getElementById('pinError').innerHTML =
+      'No se pudo verificar el acceso. Revisa tu conexión e intenta de nuevo. ' +
+      '<button class="pin-key action" style="display:inline;padding:4px 10px;font-size:13px;" ' +
+      'onclick="document.getElementById(\'pinError\').textContent=\'\';checkPinGate()">Reintentar</button>';
+  }
+}
+
+function showPinGate() {
+  document.getElementById('pinGate').style.display = 'flex';
+}
+
+function proceedToApp() {
   document.getElementById('app').style.display = 'block';
-  window.addEventListener('DOMContentLoaded', init);
+  init();
+}
+
+function pinKey(digit) {
+  if (_pinBuffer.length >= 4) return;
+  if (Date.now() < _pinLockUntil) return;
+  _pinBuffer += digit;
+  updatePinDots();
+  if (_pinBuffer.length === 4) submitPin();
+}
+
+function pinBackspace() {
+  if (Date.now() < _pinLockUntil) return;
+  _pinBuffer = _pinBuffer.slice(0, -1);
+  updatePinDots();
+}
+
+function updatePinDots() {
+  document.querySelectorAll('.pin-dot').forEach(function(dot, i) {
+    dot.classList.toggle('filled', i < _pinBuffer.length);
+  });
+}
+
+async function submitPin() {
+  if (_pinBuffer.length !== 4) return;
+  setPinKeysEnabled(false);
+  try {
+    const res = await fetch(API_BASE + '/api/panel/verify-pin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: CLIENT_SLUG, pin: _pinBuffer }),
+    });
+    const data = await res.json();
+    if (res.status === 429) {
+      lockPin(data.retryAfter || 30);
+      return;
+    }
+    if (data.valid) {
+      localStorage.setItem('nova_pin_' + CLIENT_SLUG, String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      document.getElementById('pinGate').style.display = 'none';
+      proceedToApp();
+    } else {
+      _pinAttemptCount++;
+      _pinBuffer = '';
+      updatePinDots();
+      if (_pinAttemptCount >= 5) {
+        lockPin(30);
+      } else {
+        document.getElementById('pinError').textContent = 'PIN incorrecto. Inténtalo de nuevo.';
+        setPinKeysEnabled(true);
+      }
+    }
+  } catch (e) {
+    _pinBuffer = '';
+    updatePinDots();
+    document.getElementById('pinError').textContent = 'Error de conexión. Inténtalo de nuevo.';
+    setPinKeysEnabled(true);
+  }
+}
+
+function lockPin(seconds) {
+  _pinLockUntil = Date.now() + seconds * 1000;
+  setPinKeysEnabled(false);
+  updateLockCountdown();
+  clearInterval(_pinLockTimer);
+  _pinLockTimer = setInterval(updateLockCountdown, 1000);
+}
+
+function updateLockCountdown() {
+  const remaining = Math.ceil((_pinLockUntil - Date.now()) / 1000);
+  if (remaining <= 0) {
+    clearInterval(_pinLockTimer);
+    _pinBuffer = '';
+    _pinAttemptCount = 0;
+    updatePinDots();
+    document.getElementById('pinError').textContent = '';
+    setPinKeysEnabled(true);
+    return;
+  }
+  document.getElementById('pinError').textContent = 'Demasiados intentos. Espera ' + remaining + ' segundos.';
+}
+
+function setPinKeysEnabled(enabled) {
+  document.querySelectorAll('#pinKeypad .pin-key').forEach(function(k) {
+    k.disabled = !enabled;
+  });
 }
 
 // ── NAVIGATION ──

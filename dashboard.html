@@ -690,6 +690,29 @@
   </div>
 </div>
 
+<!-- PIN RESET MODAL -->
+<div class="modal-overlay" id="pinResetModal">
+  <div class="modal">
+    <!-- Confirm step -->
+    <div id="pinResetConfirm">
+      <h2>Restablecer PIN</h2>
+      <div class="modal-sub" id="pinResetConfirmText"></div>
+      <div class="modal-actions">
+        <button class="modal-submit" id="pinResetConfirmBtn">Confirmar</button>
+        <button class="modal-cancel" onclick="closePinResetModal()">Cancelar</button>
+      </div>
+    </div>
+    <!-- Result step -->
+    <div id="pinResetResult" style="display:none;">
+      <h2>PIN restablecido</h2>
+      <div class="modal-sub">Nuevo PIN de <span id="pinResetClientName"></span>:</div>
+      <div id="pinResetValue" style="font-size:52px;font-weight:700;font-family:'Playfair Display',serif;color:var(--gold);text-align:center;padding:24px 0;letter-spacing:0.25em;"></div>
+      <div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:28px;">Este PIN no se mostrará de nuevo. Envíaselo al agente ahora.</div>
+      <button class="modal-submit" onclick="closePinResetModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -853,6 +876,7 @@ function renderClientCard(c) {
         <a class="cc-btn" href="${waUrl}" target="_blank">💬 WhatsApp</a>
         <button class="cc-btn" onclick="reenviarLink('${c.name}', '${c.phone}', '${panelUrl}')">Reenviar link</button>
         ${isDemo ? `<button class="cc-btn" style="color:var(--orange);border-color:var(--orange);" onclick="resetDemoClient('${c.slug}')">🔄 Reiniciar demo</button>` : `<button class="cc-btn" onclick="archivarCliente('${c.id}')">Archivar</button>`}
+        ${c.has_pin ? `<button class="cc-btn" style="color:var(--blue);border-color:var(--blue);" onclick="openPinResetModal('${c.slug}', '${c.name.replace(/'/g, "\\'")}')">🔑 Reset PIN</button>` : ''}
       </div>
     </div>
   `;
@@ -948,6 +972,7 @@ async function loadDashboard() {
       joined: c.created_at ? new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', year: 'numeric' }) : '',
       stats: c.stats || { leads: 0, posts: 0, listings: 0 },
       panelUrl: c.whatsapp_panel_url || `panel.html?client=${c.slug}&token=${c.token || ''}&name=${encodeURIComponent(c.name)}`,
+      has_pin: c.has_pin || false,
     })).join('');
   }
 
@@ -1044,6 +1069,55 @@ async function resetDemoClient(slug) {
     showToast('No se pudo conectar con la API para reiniciar el demo.', 'error');
   }
 }
+
+// ── PIN RESET ──
+let _pinResetSlug = null;
+let _pinResetName = null;
+
+function openPinResetModal(slug, name) {
+  _pinResetSlug = slug;
+  _pinResetName = name;
+  document.getElementById('pinResetConfirmText').textContent =
+    '¿Restablecer PIN de ' + name + '? Necesitará el nuevo PIN para acceder a su panel.';
+  document.getElementById('pinResetConfirm').style.display = '';
+  document.getElementById('pinResetResult').style.display = 'none';
+  document.getElementById('pinResetModal').classList.add('open');
+}
+
+function closePinResetModal() {
+  document.getElementById('pinResetModal').classList.remove('open');
+  _pinResetSlug = null;
+  _pinResetName = null;
+}
+
+document.getElementById('pinResetModal').addEventListener('click', function(e) {
+  if (e.target === document.getElementById('pinResetModal')) closePinResetModal();
+});
+
+document.getElementById('pinResetConfirmBtn').onclick = async function() {
+  if (!_pinResetSlug) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/admin/reset-pin?password=${OP_PASSWORD}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: _pinResetSlug }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      closePinResetModal();
+      showToast(err.error || 'Error al restablecer el PIN.', 'error');
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('pinResetClientName').textContent = _pinResetName;
+    document.getElementById('pinResetValue').textContent = data.pin;
+    document.getElementById('pinResetConfirm').style.display = 'none';
+    document.getElementById('pinResetResult').style.display = '';
+  } catch (e) {
+    closePinResetModal();
+    showToast('No se pudo conectar con la API.', 'error');
+  }
+};
 
 // ── NOVA GHOST MODE ──
 let ghostModeActive = false;
