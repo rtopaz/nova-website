@@ -915,7 +915,7 @@ async function loadDashboard() {
     if (resClients.ok) {
       const data = await resClients.json();
       clients = data.clients || [];
-      activeCount = data.active_count ?? clients.filter(c => c.active && c.onboarding_complete).length;
+      activeCount = data.active_count ?? clients.filter(c => c.active).length;
       mrrTotal = data.mrr_total ?? (activeCount * 950);
     }
     if (resPending.ok) {
@@ -949,7 +949,7 @@ async function loadDashboard() {
     clients.reduce((s, c) => s + (c.stats?.leads || 0), 0);
 
   // Active clients grid
-  const activeClients = clients.filter(c => c.active !== false && c.onboarding_complete !== false);
+  const activeClients = clients.filter(c => c.active !== false);
   const grid = document.getElementById('clientsGrid');
   if (activeClients.length === 0) {
     grid.innerHTML = `
