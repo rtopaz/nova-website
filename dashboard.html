@@ -831,16 +831,6 @@ const demoClients = [
   }
 ];
 
-const demoPending = [
-  {
-    id: 'pend-001',
-    name: 'Ana García',
-    phone: '+52 55 4321 0987',
-    zone: 'Roma, Condesa',
-    created: 'Hoy',
-    step: 'Paso 3 / 8 — conectar Instagram',
-  }
-];
 
 function renderClientCard(c) {
   const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
@@ -945,7 +935,7 @@ async function loadDashboard() {
       whatsapp_panel_url: `panel.html?client=${c.slug}&token=${c.token}&name=${encodeURIComponent(c.name)}`,
     }));
     activeCount = clients.length;
-    pendingCount = demoPending.length;
+    pendingCount = 0;
     mrrTotal = activeCount * 950;
   }
 
@@ -986,12 +976,12 @@ async function loadDashboard() {
   // Pending table — sourced from pending_clients table via /admin/pending-clients
   const pendingRows = pendingData.map(c => renderPendingRow({
     id: c.id,
-    name: c.name || '—',
+    name: c.client_data?.completed_client_data?.name || c.name || '—',
     phone: c.whatsapp_number || c.phone || '—',
     zone: c.neighborhood || '—',
     created: c.created_at ? new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }) : 'Reciente',
     step: 'Listo',
-  })).concat(demoPending.map(renderPendingRow));
+  }));
 
   document.getElementById('pendingBody').innerHTML =
     pendingRows.length ? pendingRows.join('') :
