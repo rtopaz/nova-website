@@ -719,6 +719,7 @@
 <script>
 const API_BASE = 'https://mesa-digital-ke7b.onrender.com';
 const OP_PASSWORD = 'nova2026';
+const APPROVE_SECRET = 'eL45glh5VTe8vHZNgid2ZHeT';
 
 // ── AUTH ──
 document.getElementById('authBtn').onclick = function() {
@@ -893,7 +894,7 @@ function renderPendingRow(p) {
       <div class="pt-text">${p.created}</div>
       <div class="pt-step">${p.step}</div>
       <div class="pt-actions">
-        <button class="pt-btn pt-btn-activate" onclick="activarCliente('${p.id}')">Activar</button>
+        <button class="pt-btn pt-btn-activate" onclick="activarCliente(this, '${p.id}')">Activar</button>
         <button class="pt-btn" onclick="eliminarPendiente('${p.id}')">✕</button>
       </div>
     </div>
@@ -915,15 +916,21 @@ async function loadDashboard() {
   let pendingCount = 0;
   let mrrTotal = 0;
 
+  let pendingData = [];
   try {
-    const res = await fetch(`${API_BASE}/admin/nova-clients?password=${OP_PASSWORD}`);
-    if (res.ok) {
-      const data = await res.json();
-      // API response shape: { clients, active_count, pending_count, mrr_total }
+    const [resClients, resPending] = await Promise.all([
+      fetch(`${API_BASE}/admin/nova-clients?password=${OP_PASSWORD}`),
+      fetch(`${API_BASE}/admin/pending-clients`),
+    ]);
+    if (resClients.ok) {
+      const data = await resClients.json();
       clients = data.clients || [];
       activeCount = data.active_count ?? clients.filter(c => c.active && c.onboarding_complete).length;
-      pendingCount = data.pending_count ?? clients.filter(c => !c.onboarding_complete).length;
       mrrTotal = data.mrr_total ?? (activeCount * 950);
+    }
+    if (resPending.ok) {
+      pendingData = await resPending.json();
+      pendingCount = pendingData.length;
     }
   } catch (e) {
     console.log('[Nova dashboard] API not reachable — using demo data');
@@ -976,16 +983,15 @@ async function loadDashboard() {
     })).join('');
   }
 
-  // Pending table
-  const pendingClients = clients.filter(c => c.onboarding_complete === false);
-  const pendingRows = pendingClients.map(c => renderPendingRow({
+  // Pending table — sourced from pending_clients table via /admin/pending-clients
+  const pendingRows = pendingData.map(c => renderPendingRow({
     id: c.id,
-    name: c.name,
-    phone: c.phone,
-    zone: c.zone,
+    name: c.name || '—',
+    phone: c.whatsapp_number || c.phone || '—',
+    zone: c.neighborhood || '—',
     created: c.created_at ? new Date(c.created_at).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' }) : 'Reciente',
-    step: c.onboarding_step ? `Paso ${c.onboarding_step} / 8` : 'Iniciando...',
-  })).concat(demoPending.map(renderPendingRow)); // include demo pending entries
+    step: 'Listo',
+  })).concat(demoPending.map(renderPendingRow));
 
   document.getElementById('pendingBody').innerHTML =
     pendingRows.length ? pendingRows.join('') :
@@ -1030,16 +1036,32 @@ async function archivarCliente(id) {
   }
 }
 
-function activarCliente(id) {
-  const row = document.getElementById('prow-' + id);
-  if (row) {
-    row.style.opacity = '0';
-    row.style.transition = 'opacity 0.3s';
-    setTimeout(() => {
-      row.remove();
-      showToast('Cliente activado y movido a clientes activos', 'success');
-      loadDashboard();
-    }, 300);
+async function activarCliente(btn, id) {
+  btn.disabled = true;
+  btn.textContent = 'Activando…';
+  try {
+    const res = await fetch(
+      `${API_BASE}/admin/approve-client?id=${encodeURIComponent(id)}&secret=${encodeURIComponent(APPROVE_SECRET)}`
+    );
+    if (!res.ok) {
+      btn.textContent = 'Error — reintentar';
+      btn.disabled = false;
+      return;
+    }
+    const row = document.getElementById('prow-' + id);
+    if (row) {
+      row.style.opacity = '0';
+      row.style.transition = 'opacity 0.3s';
+      setTimeout(() => row.remove(), 300);
+    }
+    const statPending = document.getElementById('statPending');
+    if (statPending) statPending.textContent = Math.max(0, parseInt(statPending.textContent || '0') - 1);
+    const statActive = document.getElementById('statActive');
+    if (statActive) statActive.textContent = parseInt(statActive.textContent || '0') + 1;
+    showToast('Cliente activado', 'success');
+  } catch (_) {
+    btn.textContent = 'Error — reintentar';
+    btn.disabled = false;
   }
 }
 
