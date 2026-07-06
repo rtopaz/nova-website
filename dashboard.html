@@ -910,7 +910,7 @@ async function loadDashboard() {
   try {
     const [resClients, resPending] = await Promise.all([
       fetch(`${API_BASE}/admin/nova-clients?password=${OP_PASSWORD}`),
-      fetch(`${API_BASE}/admin/pending-clients`),
+      fetch(`${API_BASE}/admin/pending-clients?secret=${APPROVE_SECRET}`),
     ]);
     if (resClients.ok) {
       const data = await resClients.json();
